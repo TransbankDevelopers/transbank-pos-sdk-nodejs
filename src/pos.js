@@ -1,7 +1,7 @@
 const LRC = require("lrc-calculator")
 const SerialPort = require("serialport")
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
-
+const responseMessages = require("./responseCodes")
 const ACK = 0x06
 
 module.exports = class POS {
@@ -9,7 +9,7 @@ module.exports = class POS {
         this.currentPort = null
         this.connected = false
 
-        this.ackTimeout = 1000
+        this.ackTimeout = 2000
         this.debugEnabled = false
         this.port = null
         this.responseAsString = true
@@ -37,6 +37,10 @@ module.exports = class POS {
 
     getResponsesAsHexArray() {
         this.responseAsString = false
+    }
+
+    getConnectedPort() {
+        return this.currentPort;
     }
 
 
@@ -88,9 +92,9 @@ module.exports = class POS {
                 this.disconnect()
             }
             this.port = new SerialPort(portName, { baudRate })
-            this.connected = true;
+            this.connected = true
 
-            this.parser = this.port.pipe(new InterByteTimeout({ interval: 30 }))
+            this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
 
@@ -129,36 +133,36 @@ module.exports = class POS {
         return new Promise((resolve, reject) => {
             this.port.close((error) => {
                 if (error) {
-                    reject(error);
+                    reject(error)
                 } else {
-                    resolve();
+                    resolve()
                 }
-                this.currentPort = null;
-                this.connected = false;
+                this.currentPort = null
+                this.connected = false
 
             })
 
-        });
+        })
 
     }
 
     send(payload, waitResponse = true, callback = null) {
         return new Promise((resolve, reject) => {
             if (!this.connected) {
-                reject('You have to connect to a POS to send this message: ' + payload.toString());
-                return;
+                reject("You have to connect to a POS to send this message: " + payload.toString())
+                return
             }
             // Block so just one message can be sent at a time
             if (this.waiting===true) {
-                reject( "Another message was already sent and it is still waiting for a response from the POS")
-                return;
+                reject("Another message was already sent and it is still waiting for a response from the POS")
+                return
             }
             this.waiting = true
 
             // Assert the ack arrives before the given timeout.
             let timeout = setTimeout(() => {
                 this.waiting = false
-                reject("ACK has not been received in " + this.ackTimeout + " ms.");
+                reject("ACK has not been received in " + this.ackTimeout + " ms.")
             }, this.ackTimeout)
 
             // Defines what should happen when the ACK is received
@@ -179,18 +183,30 @@ module.exports = class POS {
 
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
-                this.waiting = false
-                if (typeof callback === 'function') {
-                    callback(data);
+                let functionCode = data.toString().slice(1, 5)
+                if (functionCode==="0900") { // Sale status messages
+                    if (typeof callback==="function") {
+                        callback(data)
+                    }
+                    return
                 }
+                if (typeof callback==="function") {
+                    callback(data)
+                }
+                this.waiting = false
+
                 if (this.responseAsString) {
-                    resolve(data.toString())
+                    resolve(data.toString().slice(1, -2))
                 } else {
                     resolve(data)
                 }
             }
 
         })
+    }
+
+    getResponseMessage(response) {
+        return typeof responseMessages[response]!=="undefined" ? responseMessages[response]:null
     }
 
     itsAnACK(data) {
@@ -202,35 +218,163 @@ module.exports = class POS {
     }
 
     loadKeys() {
-        return this.send("0800")
+        return this.send("0800").then((data) => {
+            let chunks = data.split("|")
+            return {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                commerceCode: parseInt(chunks[2]),
+                terminalId: chunks[3],
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0,
+            }
+        })
     }
 
     closeDay() {
-        return this.send("0500||")
+        return this.send("0500||").then((data) => {
+            let chunks = data.split("|")
+            return {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                commerceCode: parseInt(chunks[2]),
+                terminalId: chunks[3],
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0,
+            }
+        })
     }
 
     getLastSale() {
-        return this.send("0250|")
+        return this.send("0250|").then((data) => {
+            return this.saleResponse(data)
+        })
     }
 
     getTotals() {
-        return this.send("0700||")
+        return this.send("0700||").then((data) => {
+            let chunks = data.split("|")
+            return {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                txCount: parseInt(chunks[2]),
+                txTotal: parseInt(chunks[3]),
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0,
+            }
+        })
     }
 
-    salesDetail(printOnPos = false) {
-        let print = printOnPos ? "1":"0"
-        return this.send(`0260|${print}|`)
+    salesDetail(printOnPos = false, callback = null) {
+        return new Promise((resolve, reject) => {
+            let print = printOnPos ? "0":"1"
+            let sales = [];
+
+            let promise = this.send(`0260|${print}|`, !printOnPos, onEverySale.bind(this))
+            if (printOnPos) {
+                resolve(promise);
+            }
+
+            function onEverySale(sale) {
+
+                let detail = this.saleDetailResponse(sale.toString().slice(1, -2));
+                if (detail.authorizationCode === '') {
+                    allSalesReceived(sales);
+                    return;
+                }
+                sales.push(detail);
+            }
+
+            function allSalesReceived() {
+                resolve(sales);
+            }
+
+        });
+
+    }
+
+    refund(operationId) {
+        operationId = operationId.toString().slice(0,6);
+        return this.send(`1200|${operationId}|`).then((data) => {
+            let chunks = data.split("|")
+            return {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                commerceCode: parseInt(chunks[2]),
+                terminalId: chunks[3],
+                authorizationCode: chunks[4].trim(),
+                operationId: chunks[5],
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0,
+            }
+        });
     }
 
     changeToNormalMode() {
-        return this.send("0300")
+        return this.send("0300", false);
     }
 
     sale(amount, ticket, sendStatus = false, callback = null) {
-        amount = amount.toString().padStart(9, '0').slice(0,9);
-        ticket = ticket.toString().padStart(6, '0').slice(0,6);
-        let status = sendStatus ? '1' : '10';
+        amount = amount.toString().padStart(9, "0").slice(0, 9)
+        ticket = ticket.toString().padStart(6, "0").slice(0, 6)
+        let status = sendStatus ? "1":"10"
 
-        return this.send(`0200|${amount}|${ticket}|||${status}`, true, callback)
+        return this.send(`0200|${amount}|${ticket}|||${status}`, true, callback).then((data) => {
+            return this.saleResponse(data)
+        })
+    }
+
+    saleDetailResponse(payload) {
+        let chunks = payload.split("|")
+        return {
+            functionCode: parseInt(chunks[0]),
+            responseCode: parseInt(chunks[1]),
+            commerceCode: parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            successful: parseInt(chunks[1])===0,
+            ticket: chunks[4],
+            authorizationCode: chunks[5].trim(),
+            amount: chunks[6],
+            last4Digits: parseInt(chunks[7]),
+            operationNumber: chunks[8],
+            cardType: chunks[9],
+            accountingDate: chunks[10],
+            accountNumber: chunks[11],
+            cardBrand: chunks[12],
+            realDate: chunks[13],
+            realTime: chunks[14],
+            employeeId: chunks[15],
+            tip: parseInt(chunks[16]),
+            feeAmount: (chunks[16]),
+            feeNumber: (chunks[17]),
+        }
+    }
+
+    saleResponse(payload) {
+        let chunks = payload.split("|")
+        return {
+            functionCode: parseInt(chunks[0]),
+            responseCode: parseInt(chunks[1]),
+            commerceCode: parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            successful: parseInt(chunks[1])===0,
+            ticket: chunks[4],
+            authorizationCode: (chunks[5]).trim(),
+            amount: chunks[6],
+            sharesNumber: chunks[7],
+            sharesAmount: chunks[8],
+            last4Digits: parseInt(chunks[9]),
+            operationNumber: chunks[10],
+            cardType: chunks[11],
+            accountingDate: chunks[12],
+            accountNumber: chunks[13],
+            cardBrand: chunks[14],
+            realDate: chunks[15],
+            realTime: chunks[16],
+            employeeId: chunks[17],
+            tip: parseInt(chunks[18]),
+        }
     }
 }

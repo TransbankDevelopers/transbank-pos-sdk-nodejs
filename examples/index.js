@@ -6,9 +6,15 @@ pos.autoconnect().then((port) => {
     if (port) {
         console.log('Connected to ', port.path)
     }
-    pos.sale(1000, '1212', true, (data) => {
-        console.log('MIDDLE', data)
-    });
+
+    // pos.changeToNormalMode().then((data) => {
+    //     console.log('RESPONSE', data);
+    // })
+    // pos.sale(1000, '1212', false, (data) => {
+    //     console.log('MIDDLE', data)
+    // }).then((data) => {
+    //         console.log('RESPONSE', data);
+    // });
 
 
     // pos.getResponsesAsString();
