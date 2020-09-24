@@ -1,0 +1,31 @@
+{
+  "name": "transbank-pos-sdk-node",
+  "version": "0.0.1",
+  "description": "SDK POS Intgrado para Node.js",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "npx babel src --out-dir dist",
+    "start": "npx babel src --watch --out-dir dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "POs",
+    "transbank",
+    "serial"
+  ],
+  "author": "Gonzalo De Spírito",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@serialport/parser-inter-byte-timeout": "^9.0.1",
+    "serialport": "^9.0.1",
+    "lrc-calculator": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-transform-runtime": "^7.11.5",
+    "@babel/preset-env": "^7.11.5",
+    "jest": "^26.4.2"
+  }
+}
