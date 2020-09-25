@@ -21,6 +21,12 @@ module.exports = class POS {
         }
     }
 
+    /*
+     |--------------------------------------------------------------------------
+     | Getters and Setters
+     |--------------------------------------------------------------------------
+     */
+
     debug(...args) {
         if (this.debugEnabled) {
             console.log(...args)
@@ -40,7 +46,7 @@ module.exports = class POS {
     }
 
     getConnectedPort() {
-        return this.currentPort;
+        return this.currentPort
     }
 
 
@@ -56,40 +62,24 @@ module.exports = class POS {
         return SerialPort.list()
     }
 
-    async autoconnect() {
-        let vendors = [
-            { vendor: "11ca", product: "0222" }, // Verifone VX520c
-            { vendor: "0b00", product: "0054" }, // Ingenico 3500
-        ]
+    /*
+     |--------------------------------------------------------------------------
+     | Serial Port Handling
+     |--------------------------------------------------------------------------
+     */
 
-        let availablePorts = await this.listPorts()
-        let ports = []
-        for (let port of availablePorts) {
-            vendors.forEach((vendor) => {
-                if (vendor.vendor===port.vendorId) ports.push(port)
-            })
-        }
-        if (ports.length===0) {
-            ports = availablePorts
-        }
-        for (let port of ports) {
-            this.debug("Trying to connect to " + port.path)
-            try {
-                await this.connect(port.path)
-                return port
-            } catch (e) {
-            }
-        }
-
-        this.debug("Autoconnection failed")
-        return false
-    }
 
     connect(portName = null, baudRate = 115200) {
+        this.debug("Connecting to " + portName + " @" + baudRate)
         return new Promise((resolve, reject) => {
             if (this.connected) {
                 this.debug("Trying to connect to a port while its already connected. Disconnecting... ")
-                this.disconnect()
+                this.disconnect().then(() => {
+                    resolve(this.connect(portName, baudRate))
+                }).catch(() => {
+                    resolve(this.connect(portName, baudRate))
+                })
+                return
             }
             this.port = new SerialPort(portName, { baudRate })
             this.connected = true
@@ -132,18 +122,48 @@ module.exports = class POS {
     disconnect() {
         return new Promise((resolve, reject) => {
             this.port.close((error) => {
-                if (error) {
-                    reject(error)
-                } else {
-                    resolve()
-                }
                 this.currentPort = null
                 this.connected = false
-
+                if (error) {
+                    this.debug("Error closing port", error)
+                    reject(error)
+                } else {
+                    this.debug("Port closed sucessfully")
+                    resolve(true);
+                }
             })
 
         })
 
+    }
+
+    async autoconnect() {
+        let vendors = [
+            { vendor: "11ca", product: "0222" }, // Verifone VX520c
+            { vendor: "0b00", product: "0054" }, // Ingenico 3500
+        ]
+
+        let availablePorts = await this.listPorts()
+        let ports = []
+        for (let port of availablePorts) {
+            vendors.forEach((vendor) => {
+                if (vendor.vendor===port.vendorId) ports.push(port)
+            })
+        }
+        if (ports.length===0) {
+            ports = availablePorts
+        }
+        for (let port of ports) {
+            this.debug("Trying to connect to " + port.path)
+            try {
+                await this.connect(port.path)
+                return port
+            } catch (e) {
+            }
+        }
+
+        this.debug("Autoconnection failed")
+        return false
     }
 
     send(payload, waitResponse = true, callback = null) {
@@ -183,23 +203,23 @@ module.exports = class POS {
 
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
+                let response = data
+                if (this.responseAsString) {
+                    response = data.toString().slice(1, -2)
+                }
                 let functionCode = data.toString().slice(1, 5)
                 if (functionCode==="0900") { // Sale status messages
                     if (typeof callback==="function") {
-                        callback(data)
+                        callback(response, data)
                     }
                     return
                 }
                 if (typeof callback==="function") {
-                    callback(data)
+                    callback(response, data)
                 }
                 this.waiting = false
 
-                if (this.responseAsString) {
-                    resolve(data.toString().slice(1, -2))
-                } else {
-                    resolve(data)
-                }
+                resolve(response, data)
             }
 
         })
@@ -212,6 +232,12 @@ module.exports = class POS {
     itsAnACK(data) {
         return Buffer.compare(data, Buffer.from([ACK]))===0
     }
+
+    /*
+     |--------------------------------------------------------------------------
+     | POS Methods
+     |--------------------------------------------------------------------------
+     */
 
     poll() {
         return this.send("0100", false)
@@ -265,36 +291,36 @@ module.exports = class POS {
         })
     }
 
-    salesDetail(printOnPos = false, callback = null) {
-        return new Promise((resolve, reject) => {
+    salesDetail(printOnPos = false) {
+        return new Promise((resolve) => {
             let print = printOnPos ? "0":"1"
-            let sales = [];
+            let sales = []
 
             let promise = this.send(`0260|${print}|`, !printOnPos, onEverySale.bind(this))
             if (printOnPos) {
-                resolve(promise);
+                resolve(promise)
             }
 
             function onEverySale(sale) {
 
-                let detail = this.saleDetailResponse(sale.toString().slice(1, -2));
-                if (detail.authorizationCode === '') {
-                    allSalesReceived(sales);
-                    return;
+                let detail = this.saleDetailResponse(sale.toString().slice(1, -2))
+                if (detail.authorizationCode==="") {
+                    allSalesReceived(sales)
+                    return
                 }
-                sales.push(detail);
+                sales.push(detail)
             }
 
             function allSalesReceived() {
-                resolve(sales);
+                resolve(sales)
             }
 
-        });
+        })
 
     }
 
     refund(operationId) {
-        operationId = operationId.toString().slice(0,6);
+        operationId = operationId.toString().slice(0, 6)
         return this.send(`1200|${operationId}|`).then((data) => {
             let chunks = data.split("|")
             return {
@@ -307,11 +333,11 @@ module.exports = class POS {
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
                 successful: parseInt(chunks[1])===0,
             }
-        });
+        })
     }
 
     changeToNormalMode() {
-        return this.send("0300", false);
+        return this.send("0300", false)
     }
 
     sale(amount, ticket, sendStatus = false, callback = null) {
@@ -323,6 +349,12 @@ module.exports = class POS {
             return this.saleResponse(data)
         })
     }
+
+    /*
+     |--------------------------------------------------------------------------
+     | Responses
+     |--------------------------------------------------------------------------
+     */
 
     saleDetailResponse(payload) {
         let chunks = payload.split("|")

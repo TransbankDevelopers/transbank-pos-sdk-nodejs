@@ -1,6 +1,6 @@
-const Transbank = require('../index');
+const { POS } = require('../index');
 
-const pos = new Transbank.POS();
+const pos = new POS();
 pos.setDebug(true);
 pos.autoconnect().then((port) => {
     if (port) {
