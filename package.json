@@ -1,7 +1,7 @@
 {
   "name": "transbank-pos-sdk",
-  "version": "0.0.1",
-  "description": "SDK POS Intgrado para Node.js",
+  "version": "0.1.0",
+  "description": "SDK Web para POS Integrado en Node.js",
   "main": "index.js",
   "scripts": {
     "prepublish": "npm run build",
@@ -14,7 +14,7 @@
     "transbank",
     "serial"
   ],
-  "author": "Gonzalo De Spírito",
+  "author": "Continuum, Gonzalo De Spírito",
   "license": "BSD-3-Clause",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
