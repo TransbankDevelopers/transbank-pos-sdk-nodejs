@@ -241,7 +241,6 @@ pos.sale(1500, '12423', true, callback)
 }); 
 
 ```
-### Notas importantes 
 
 ### Proyecto de ejemplo
 El SDK Web de POS integrado está construido en Node.js, usando este SDK por debajo. [Puedes revisar el código acá](https://github.com/TransbankDevelopers/transbank-pos-sdk-web-agent). 
