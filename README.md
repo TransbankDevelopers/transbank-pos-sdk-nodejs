@@ -103,22 +103,22 @@ Este comando, si bien es de uso interno, es posible usarlo públicamente y permi
 método que ocupan todos los siguientes helpers para comunicarse con el POS.
 
 Este método devuelve una promesa. Si `waitResponse` es `false` esta promese se resuelve cuando el comando es recibido 
-correctamente por el POS (se recibe ack). Si `waitResponse`  es `true` o cuando llega un mensaje de respuesta del POS 
-(cómo la respuesta de los solicitado).  
+correctamente por el POS (se recibe ack). Si `waitResponse`  es `true` la promesa se resuelve cuando llega un mensaje de 
+respuesta del POS (ejemplo, cuando la venta termina y el POS envía el resultado de esta venta).   
 
-`payload` es el comando a enviar. Puede ser un string (`"0200"`) o un Array de bytes en hexadecimal (`[0x20, 0x32, 0x10]`). 
+`payload` es el mensaje a enviar. Puede ser un string (`"0200"`) o un Array de bytes en hexadecimal (`[0x20, 0x32, 0x10]`). 
  
  Si `callback` es una función, esta se ejecutará cada vez que el POS envíe algo. Se usa para obtener los status intermedios de una venta que se envían antes de que llegue la respuesta final.  
    
 ```javascript
-pos.send('0500||', false) // Cerrar día 
+pos.send('0500||', false) // Cerrar día  con waitResponse false
     .then( (response) => {
-        console.log('Comando enviado correctamente', response);
+        console.log('Comando enviado correctamente (se recibió ack del POS)', response);
     }).catch( (err) => {
         console.log('Ocurrió un error inesperado', err);
     });
 
-pos.send('0500||', true) // Cerrar día 
+pos.send('0500||', true) // Cerrar día con waitResponse true
     .then( (response) => {
         console.log('Respuesta recibida por el POS', response);
     }).catch( (err) => {
@@ -129,7 +129,7 @@ pos.send('0500||', true) // Cerrar día
 #### `poll()`
 Ejecuta un comando `poll` en el POS. 
 ```javascript
-pos.poll(portName).then( (response) => {
+pos.poll().then( (response) => {
     console.log('poll ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -139,7 +139,7 @@ pos.poll(portName).then( (response) => {
 #### `loadKeys()`
 Ejecuta un comando `loadKeys` en el POS. 
 ```javascript
-pos.loadKeys(portName).then( (response) => {
+pos.loadKeys().then( (response) => {
     console.log('loadKeys ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -150,7 +150,7 @@ pos.loadKeys(portName).then( (response) => {
 #### `closeDay()`
 Ejecuta un comando `closeDay` en el POS. 
 ```javascript
-pos.closeDay(portName).then( (response) => {
+pos.closeDay().then( (response) => {
     console.log('closeDay ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -161,7 +161,7 @@ pos.closeDay(portName).then( (response) => {
 #### `getLastSale()`
 Ejecuta un comando `getLastSale` en el POS. 
 ```javascript
-pos.getLastSale(portName).then( (response) => {
+pos.getLastSale().then( (response) => {
     console.log('getLastSale ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -171,7 +171,7 @@ pos.getLastSale(portName).then( (response) => {
 #### `getTotals()`
 Ejecuta un comando `getTotals` en el POS. 
 ```javascript
-pos.getTotals(portName).then( (response) => {
+pos.getTotals().then( (response) => {
     console.log('getTotals ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -184,7 +184,7 @@ Si `printOnPos` es true, el POS no enviará respuesta al computador y solo lo im
 respuesta se ejecutará cuando llegue el ack de que el POS recibió el comando. En caso contrario, la promesa se resuelve 
 cuando llega la lista con todas las ventas. 
 ```javascript
-pos.salesDetail(portName).then( (response) => {
+pos.salesDetail().then( (response) => {
     console.log('salesDetail ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -194,7 +194,7 @@ pos.salesDetail(portName).then( (response) => {
 #### `refund(operationId)`
 Ejecuta un comando `refund` en el POS. `operationId` es el ID de la operación que se desea anular.  
 ```javascript
-pos.refund(portName).then( (response) => {
+pos.refund('102').then( (response) => {
     console.log('refund ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
@@ -204,7 +204,7 @@ pos.refund(portName).then( (response) => {
 #### `changeToNormalMode()`
 Ejecuta un comando `changeToNormalMode` en el POS. 
 ```javascript
-pos.changeToNormalMode(portName).then( (response) => {
+pos.changeToNormalMode().then( (response) => {
     console.log('changeToNormalMode ejecutado. Respuesta: ', response);
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
