@@ -49,6 +49,10 @@ module.exports = class POS {
         return this.currentPort
     }
 
+    isConnected() {
+        return this.connected
+    }
+
 
     raw_serial_port() {
         return this.port
@@ -273,7 +277,12 @@ module.exports = class POS {
 
     getLastSale() {
         return this.send("0250|").then((data) => {
-            return this.saleResponse(data)
+            try {
+                return this.saleResponse(data)
+            } catch (e) {
+                return new Promise((resolve, reject) => {reject(e.getMessage())})
+            }
+
         })
     }
 
@@ -305,14 +314,10 @@ module.exports = class POS {
 
                 let detail = this.saleDetailResponse(sale.toString().slice(1, -2))
                 if (detail.authorizationCode==="") {
-                    allSalesReceived(sales)
+                    resolve(sales)
                     return
                 }
                 sales.push(detail)
-            }
-
-            function allSalesReceived() {
-                resolve(sales)
             }
 
         })
@@ -320,6 +325,12 @@ module.exports = class POS {
     }
 
     refund(operationId) {
+        if (typeof operationId==="undefined") {
+            return new Promise((resolve, reject) => {
+                reject("Operation ID not provided when calling refund method.")
+            })
+        }
+        
         operationId = operationId.toString().slice(0, 6)
         return this.send(`1200|${operationId}|`).then((data) => {
             let chunks = data.split("|")
@@ -358,6 +369,7 @@ module.exports = class POS {
 
     saleDetailResponse(payload) {
         let chunks = payload.split("|")
+        let authorizationCode = typeof chunks[5] === 'undefined' ? chunks[5].trim() : null;
         return {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
@@ -366,7 +378,7 @@ module.exports = class POS {
             responseMessage: this.getResponseMessage(parseInt(chunks[1])),
             successful: parseInt(chunks[1])===0,
             ticket: chunks[4],
-            authorizationCode: chunks[5].trim(),
+            authorizationCode: authorizationCode,
             amount: chunks[6],
             last4Digits: parseInt(chunks[7]),
             operationNumber: chunks[8],
@@ -385,6 +397,7 @@ module.exports = class POS {
 
     saleResponse(payload) {
         let chunks = payload.split("|")
+        let authorizationCode = typeof chunks[5] === 'undefined' ? chunks[5].trim() : null;
         return {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
@@ -393,7 +406,7 @@ module.exports = class POS {
             responseMessage: this.getResponseMessage(parseInt(chunks[1])),
             successful: parseInt(chunks[1])===0,
             ticket: chunks[4],
-            authorizationCode: (chunks[5]).trim(),
+            authorizationCode: authorizationCode,
             amount: chunks[6],
             sharesNumber: chunks[7],
             sharesAmount: chunks[8],
