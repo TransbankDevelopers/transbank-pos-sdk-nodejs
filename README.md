@@ -79,7 +79,7 @@ pos.connect(portName).then( (response) => {
 #### `disconnect()`
 Desconectar (cerrar conexión serial) con el POS actualmente conectado.  
 ```javascript
-pos.disconnect(portName).then( (response) => {
+pos.disconnect().then( (response) => {
     console.log('Puerto descontactado correctamente');
 }).catch( (err) => {
     console.log('Ocurrió un error inesperado', err);
