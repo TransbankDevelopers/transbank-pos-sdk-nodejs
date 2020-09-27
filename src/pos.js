@@ -313,7 +313,7 @@ module.exports = class POS {
             function onEverySale(sale) {
 
                 let detail = this.saleDetailResponse(sale.toString().slice(1, -2))
-                if (detail.authorizationCode==="") {
+                if (detail.authorizationCode=== "" || detail.authorizationCode === null) {
                     resolve(sales)
                     return
                 }
@@ -330,7 +330,7 @@ module.exports = class POS {
                 reject("Operation ID not provided when calling refund method.")
             })
         }
-        
+
         operationId = operationId.toString().slice(0, 6)
         return this.send(`1200|${operationId}|`).then((data) => {
             let chunks = data.split("|")
@@ -369,7 +369,7 @@ module.exports = class POS {
 
     saleDetailResponse(payload) {
         let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] === 'undefined' ? chunks[5].trim() : null;
+        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         return {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
@@ -397,7 +397,7 @@ module.exports = class POS {
 
     saleResponse(payload) {
         let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] === 'undefined' ? chunks[5].trim() : null;
+        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         return {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
