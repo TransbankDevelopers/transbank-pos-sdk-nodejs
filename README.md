@@ -39,7 +39,7 @@ pos.autoconnect() // Esta línea permite busca en todos los puertos si existe un
 La mayoría de los métodos devuelve un `Promise` que al resolverse devuelve la respuesta del POS o el resultado de la operación
 
 #### `setDebug(true/false)`
-Este método permite en un solo comando buscar un POS dentro de los puertos disponibles y conectarse automáticamente al primer POS que encuentre (en caso de haber más de uno)
+Habilita/Deshabilita el que se imprima información de debug en la consola. 
 ```javascript
 pos.setDebug(true);
 ```
