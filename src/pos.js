@@ -86,8 +86,13 @@ module.exports = class POS {
                 return
             }
 
-            this.port = new SerialPort(portName, { baudRate })
+            this.port = new SerialPort(portName, { baudRate, autoOpen: false })
 
+            this.port.open((err) => {
+                if (err) {
+                    reject('Could not open serial connection...');
+                }
+            })
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
@@ -119,7 +124,11 @@ module.exports = class POS {
                 }).catch(async (e) => {
                     this.connected = false
                     this.currentPort = null
-                    await this.port.close();
+                    try {
+                        await this.port.close();
+                    } catch (e) {
+
+                    }
                     reject(e)
                 })
 
