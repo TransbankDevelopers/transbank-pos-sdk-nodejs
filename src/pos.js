@@ -85,8 +85,8 @@ module.exports = class POS {
                 })
                 return
             }
+
             this.port = new SerialPort(portName, { baudRate })
-            this.connected = true
 
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
@@ -112,10 +112,14 @@ module.exports = class POS {
 
 
             this.port.on("open", () => {
+                this.connected = true
                 this.poll().then(() => {
                     this.currentPort = portName
                     resolve(true)
-                }).catch((e) => {
+                }).catch(async (e) => {
+                    this.connected = false
+                    this.currentPort = null
+                    await this.port.close();
                     reject(e)
                 })
 
@@ -163,6 +167,7 @@ module.exports = class POS {
                 await this.connect(port.path)
                 return port
             } catch (e) {
+                console.log(e);
             }
         }
 
@@ -203,7 +208,11 @@ module.exports = class POS {
             this.debug(`💻 > `, buffer, " -> ", `${buffer}`)
 
             //Send the message
-            this.port.write(buffer)
+            this.port.write(buffer, function(err) {
+                if (err) {
+                    reject('Failed to send message to POS. Maybe it is disconnected.');
+                }
+            })
 
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
