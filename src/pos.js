@@ -379,7 +379,7 @@ module.exports = class POS {
         })
     }
 
-    sale2(amount, ticket, commerceCode = null, sendStatus = false, callback = null) {
+    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
         commerceCode = commerceCode === null ? '0' : commerceCode;
