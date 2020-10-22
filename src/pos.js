@@ -3,8 +3,10 @@ const SerialPort = require("serialport")
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes")
 const ACK = 0x06
+const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
 module.exports = class POS {
+
     constructor() {
         this.currentPort = null
         this.connected = false
@@ -450,7 +452,7 @@ module.exports = class POS {
             employeeId: chunks[17],
             tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
         };
-        if (response.functionCode === 271) {
+        if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
             response.change = chunks[20];
             response.commerceCode = chunks[21];
         }
