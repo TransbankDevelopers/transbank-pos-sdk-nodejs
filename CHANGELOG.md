@@ -1,3 +1,6 @@
+[1.1.0]
+# Fixed
+- Añade soporte para multi código y vuelto [PR #1](https://github.com/TransbankDevelopers/transbank-pos-sdk-nodejs/pull/1)
 
 [1.0.2]
 # Fixed
