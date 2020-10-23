@@ -3,8 +3,10 @@ const SerialPort = require("serialport")
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes")
 const ACK = 0x06
+const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
 module.exports = class POS {
+
     constructor() {
         this.currentPort = null
         this.connected = false
@@ -372,9 +374,20 @@ module.exports = class POS {
     sale(amount, ticket, sendStatus = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
-        let status = sendStatus ? "1":"10"
+        let status = sendStatus ? "1":"0"
 
         return this.send(`0200|${amount}|${ticket}|||${status}`, true, callback).then((data) => {
+            return this.saleResponse(data)
+        })
+    }
+
+    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, callback = null) {
+        amount = amount.toString().padStart(9, "0").slice(0, 9)
+        ticket = ticket.toString().padStart(6, "0").slice(0, 6)
+        commerceCode = commerceCode === null ? '0' : commerceCode;
+        let status = sendStatus ? "1":"0"
+
+        return this.send(`0270|${amount}|${ticket}|||${status}|${commerceCode}`, true, callback).then((data) => {
             return this.saleResponse(data)
         })
     }
@@ -416,7 +429,7 @@ module.exports = class POS {
     saleResponse(payload) {
         let chunks = payload.split("|")
         let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-        return {
+        let response = {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
             commerceCode: parseInt(chunks[2]),
@@ -425,10 +438,10 @@ module.exports = class POS {
             successful: parseInt(chunks[1])===0,
             ticket: chunks[4],
             authorizationCode: authorizationCode,
-            amount: chunks[6],
+            amount: parseInt(chunks[6]),
             sharesNumber: chunks[7],
             sharesAmount: chunks[8],
-            last4Digits: parseInt(chunks[9]),
+            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
             operationNumber: chunks[10],
             cardType: chunks[11],
             accountingDate: chunks[12],
@@ -437,7 +450,12 @@ module.exports = class POS {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: parseInt(chunks[18]),
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+        };
+        if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
+            response.change = chunks[20];
+            response.commerceCode = chunks[21];
         }
+        return response;
     }
 }

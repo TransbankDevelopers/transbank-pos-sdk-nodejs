@@ -7,6 +7,7 @@ pos.autoconnect().then((port) => {
         console.log('Connected to ', port.path)
     }
 
+
     // pos.changeToNormalMode().then((data) => {
     //     console.log('RESPONSE', data);
     // })
