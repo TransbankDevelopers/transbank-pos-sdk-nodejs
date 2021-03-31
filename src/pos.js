@@ -224,7 +224,7 @@ module.exports = class POS {
 
             // Prepare the message
             let buffer = Buffer.from(LRC.asStxEtx(payload))
-            var prettyData = ''
+            let prettyData = ''
             buffer.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
                 
             this.debug(`💻 > `, buffer, " -> ", `${prettyData}`)
