@@ -98,8 +98,10 @@ module.exports = class POS {
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
-
-                this.debug(`🤖 > ${data}`, data)
+                
+                var prettyData = ''
+                data.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
+                this.debug(`🤖 > ${prettyData}`, data)
 
                 // Primero, se recibe un ACK
                 if (this.itsAnACK(data)) {
@@ -125,6 +127,7 @@ module.exports = class POS {
                     resolve(true)
                 }).catch(async (e) => {
                     this.connected = false
+                    this.waiting = false
                     this.currentPort = null
                     try {
                         await this.port.close();
@@ -135,14 +138,19 @@ module.exports = class POS {
                 })
 
             })
+
+            this.port.on("close", ()=> {
+                this.debug("Port closed")
+                this.currentPort = null
+                this.waiting = false
+                this.connected = false
+            })
         })
     }
 
     disconnect() {
         return new Promise((resolve, reject) => {
             this.port.close((error) => {
-                this.currentPort = null
-                this.connected = false
                 if (error) {
                     this.debug("Error closing port", error)
                     reject(error)
@@ -216,7 +224,10 @@ module.exports = class POS {
 
             // Prepare the message
             let buffer = Buffer.from(LRC.asStxEtx(payload))
-            this.debug(`💻 > `, buffer, " -> ", `${buffer}`)
+            var prettyData = ''
+            buffer.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
+                
+            this.debug(`💻 > `, buffer, " -> ", `${prettyData}`)
 
             //Send the message
             this.port.write(buffer, function(err) {
