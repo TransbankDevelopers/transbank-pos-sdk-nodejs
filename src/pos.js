@@ -16,6 +16,7 @@ module.exports = class POS {
         this.port = null
         this.responseAsString = true
         this.waiting = false
+        this.connecting = false;
 
         this.responseCallback = function () {
         }
@@ -77,7 +78,14 @@ module.exports = class POS {
 
     connect(portName = null, baudRate = 115200) {
         this.debug("Connecting to " + portName + " @" + baudRate)
+
         return new Promise((resolve, reject) => {
+            // Block so just one connect command can be sent at a time
+            if (this.connecting === true) {
+                reject("Another connect command was already sent and it is still waiting")
+                return
+            }
+
             if (this.connected) {
                 this.debug("Trying to connect to a port while its already connected. Disconnecting... ")
                 this.disconnect().then(() => {
@@ -85,9 +93,12 @@ module.exports = class POS {
                 }).catch(() => {
                     resolve(this.connect(portName, baudRate))
                 })
+                this.connecting = true
                 return
             }
 
+            this.connecting = true
+            
             this.port = new SerialPort(portName, { baudRate, autoOpen: false })
 
             this.port.open((err) => {
@@ -130,7 +141,7 @@ module.exports = class POS {
                     this.waiting = false
                     this.currentPort = null
                     try {
-                        await this.port.close();
+                        if(this.port.isOpen) await this.port.close();
                     } catch (e) {
 
                     }
@@ -145,11 +156,19 @@ module.exports = class POS {
                 this.waiting = false
                 this.connected = false
             })
+
+            this.connecting = false
         })
     }
 
     disconnect() {
         return new Promise((resolve, reject) => {
+
+            if(!this.port.isOpen) {
+                resolve(true)
+                return
+            }
+
             this.port.close((error) => {
                 if (error) {
                     this.debug("Error closing port", error)
@@ -165,6 +184,12 @@ module.exports = class POS {
     }
 
     async autoconnect() {
+        // Block so just one autoconnect command can be sent at a time
+        if (this.connecting === true) {
+            this.debug("It is already trying to connect to a port and we wait for it to finish")
+            return false
+        }
+
         let vendors = [
             { vendor: "11ca", product: "0222" }, // Verifone VX520c
             { vendor: "0b00", product: "0054" }, // Ingenico 3500
@@ -184,12 +209,14 @@ module.exports = class POS {
             this.debug("Trying to connect to " + port.path)
             try {
                 await this.connect(port.path)
+                this.connecting = false;
                 return port
             } catch (e) {
                 console.log(e);
             }
         }
 
+        this.connecting = false;
         this.debug("Autoconnection failed")
         return false
     }
