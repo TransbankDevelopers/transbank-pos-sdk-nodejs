@@ -1,13 +1,15 @@
 const LRC = require("lrc-calculator")
 const SerialPort = require("serialport")
+const EventEmitter = require('events');
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes")
 const ACK = 0x06
 const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
-module.exports = class POS {
+module.exports = class POS extends EventEmitter {
 
     constructor() {
+        super()
         this.currentPort = null
         this.connected = false
 
@@ -111,7 +113,9 @@ module.exports = class POS {
             this.parser.on("data", (data) => {
                 
                 let prettyData = ''
-                data.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
+                data.forEach(char=>{
+                    prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`
+                }, '')
                 this.debug(`🤖 > ${prettyData}`, data)
 
                 // Primero, se recibe un ACK
@@ -135,6 +139,7 @@ module.exports = class POS {
                 this.connected = true
                 this.poll().then(() => {
                     this.currentPort = portName
+                    this.emit('port_opened', this.currentPort);
                     resolve(true)
                 }).catch(async (e) => {
                     this.connected = false
@@ -155,6 +160,7 @@ module.exports = class POS {
                 this.currentPort = null
                 this.waiting = false
                 this.connected = false
+                this.emit('port_closed');
             })
 
             this.connecting = false
@@ -174,7 +180,7 @@ module.exports = class POS {
                     this.debug("Error closing port", error)
                     reject(error)
                 } else {
-                    this.debug("Port closed sucessfully")
+                    this.debug("Port closed successfully")
                     resolve(true);
                 }
             })
@@ -192,7 +198,7 @@ module.exports = class POS {
 
         let vendors = [
             { vendor: "11ca", product: "0222" }, // Verifone VX520c
-            { vendor: "0b00", product: "0054" }, // Ingenico 3500
+            { vendor: "0b00", product: "0054" }, // Ingenico DESK3500
         ]
 
         let availablePorts = await this.listPorts()
