@@ -14,6 +14,7 @@ module.exports = class POS extends EventEmitter {
         this.connected = false
 
         this.ackTimeout = 2000
+        this.posTimeout = 150000 
         this.debugEnabled = false
         this.port = null
         this.responseAsString = true
@@ -243,6 +244,7 @@ module.exports = class POS extends EventEmitter {
             // Assert the ack arrives before the given timeout.
             let timeout = setTimeout(() => {
                 this.waiting = false
+                clearTimeout(responseTimeout)
                 reject("ACK has not been received in " + this.ackTimeout + " ms.")
             }, this.ackTimeout)
 
@@ -269,8 +271,14 @@ module.exports = class POS extends EventEmitter {
                 }
             })
 
+            let responseTimeout = setTimeout(() => {
+                this.waiting = false
+                reject(`Response of POS has not been received in ${this.posTimeout/1000} seconds`)
+            }, this.posTimeout)
+
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
+                clearTimeout(responseTimeout)
                 let response = data
                 if (this.responseAsString) {
                     response = data.toString().slice(1, -2)
