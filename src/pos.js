@@ -284,15 +284,17 @@ module.exports = class POS extends EventEmitter {
                     response = data.toString().slice(1, -2)
                 }
                 let functionCode = data.toString().slice(1, 5)
-                if (functionCode==="0900") { // Sale status messages
-                    if (typeof callback==="function") {
-                        callback(response, data)
-                    }
-                    return
-                }
+
                 if (typeof callback==="function") {
-                    callback(response, data)
+                    if (functionCode==="0900") { // Sale status messages
+                        callback(this.intermediateResponse(response), data)
+                        return
+                    }
+
+                    if (functionCode==="0261")
+                        callback(response, data)
                 }
+
                 this.waiting = false
 
                 resolve(response, data)
@@ -517,6 +519,16 @@ module.exports = class POS extends EventEmitter {
             response.change = chunks[20];
             response.commerceCode = chunks[21];
         }
+        return response;
+    }
+
+    intermediateResponse(payload) {
+        let chunks = payload.split("|")
+        let response = {
+            responseCode: parseInt(chunks[1]),
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+        }
+
         return response;
     }
 }
