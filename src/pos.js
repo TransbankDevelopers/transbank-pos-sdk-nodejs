@@ -374,6 +374,15 @@ module.exports = class POS extends EventEmitter {
 
     salesDetail(printOnPos = false) {
         return new Promise((resolve) => {
+
+            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string')
+                return new Promise((resolve, reject) => {
+                    reject("printOnPos must be of type boolean.")
+                })
+
+            if(typeof printOnPos === 'string')
+                printOnPos = (printOnPos === 'true' || printOnPos === '1') ? true:false
+
             let print = printOnPos ? "0":"1"
             let sales = []
 
