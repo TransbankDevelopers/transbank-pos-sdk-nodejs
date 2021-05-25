@@ -1,21 +1,25 @@
 const LRC = require("lrc-calculator")
 const SerialPort = require("serialport")
+const EventEmitter = require('events');
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes")
 const ACK = 0x06
 const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
-module.exports = class POS {
+module.exports = class POS extends EventEmitter {
 
     constructor() {
+        super()
         this.currentPort = null
         this.connected = false
 
         this.ackTimeout = 2000
+        this.posTimeout = 150000 
         this.debugEnabled = false
         this.port = null
         this.responseAsString = true
         this.waiting = false
+        this.connecting = false;
 
         this.responseCallback = function () {
         }
@@ -77,7 +81,14 @@ module.exports = class POS {
 
     connect(portName = null, baudRate = 115200) {
         this.debug("Connecting to " + portName + " @" + baudRate)
+
         return new Promise((resolve, reject) => {
+            // Block so just one connect command can be sent at a time
+            if (this.connecting === true) {
+                reject("Another connect command was already sent and it is still waiting")
+                return
+            }
+
             if (this.connected) {
                 this.debug("Trying to connect to a port while its already connected. Disconnecting... ")
                 this.disconnect().then(() => {
@@ -85,9 +96,12 @@ module.exports = class POS {
                 }).catch(() => {
                     resolve(this.connect(portName, baudRate))
                 })
+                this.connecting = true
                 return
             }
 
+            this.connecting = true
+            
             this.port = new SerialPort(portName, { baudRate, autoOpen: false })
 
             this.port.open((err) => {
@@ -100,7 +114,9 @@ module.exports = class POS {
             this.parser.on("data", (data) => {
                 
                 let prettyData = ''
-                data.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
+                data.forEach(char=>{
+                    prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`
+                }, '')
                 this.debug(`🤖 > ${prettyData}`, data)
 
                 // Primero, se recibe un ACK
@@ -124,13 +140,14 @@ module.exports = class POS {
                 this.connected = true
                 this.poll().then(() => {
                     this.currentPort = portName
+                    this.emit('port_opened', this.currentPort);
                     resolve(true)
                 }).catch(async (e) => {
                     this.connected = false
                     this.waiting = false
                     this.currentPort = null
                     try {
-                        await this.port.close();
+                        if(this.port.isOpen) await this.port.close();
                     } catch (e) {
 
                     }
@@ -144,18 +161,27 @@ module.exports = class POS {
                 this.currentPort = null
                 this.waiting = false
                 this.connected = false
+                this.emit('port_closed');
             })
+
+            this.connecting = false
         })
     }
 
     disconnect() {
         return new Promise((resolve, reject) => {
+
+            if(!this.port.isOpen) {
+                resolve(true)
+                return
+            }
+
             this.port.close((error) => {
                 if (error) {
                     this.debug("Error closing port", error)
                     reject(error)
                 } else {
-                    this.debug("Port closed sucessfully")
+                    this.debug("Port closed successfully")
                     resolve(true);
                 }
             })
@@ -165,9 +191,15 @@ module.exports = class POS {
     }
 
     async autoconnect() {
+        // Block so just one autoconnect command can be sent at a time
+        if (this.connecting === true) {
+            this.debug("It is already trying to connect to a port and we wait for it to finish")
+            return false
+        }
+
         let vendors = [
             { vendor: "11ca", product: "0222" }, // Verifone VX520c
-            { vendor: "0b00", product: "0054" }, // Ingenico 3500
+            { vendor: "0b00", product: "0054" }, // Ingenico DESK3500
         ]
 
         let availablePorts = await this.listPorts()
@@ -184,12 +216,14 @@ module.exports = class POS {
             this.debug("Trying to connect to " + port.path)
             try {
                 await this.connect(port.path)
+                this.connecting = false;
                 return port
             } catch (e) {
                 console.log(e);
             }
         }
 
+        this.connecting = false;
         this.debug("Autoconnection failed")
         return false
     }
@@ -210,6 +244,7 @@ module.exports = class POS {
             // Assert the ack arrives before the given timeout.
             let timeout = setTimeout(() => {
                 this.waiting = false
+                clearTimeout(responseTimeout)
                 reject("ACK has not been received in " + this.ackTimeout + " ms.")
             }, this.ackTimeout)
 
@@ -236,22 +271,30 @@ module.exports = class POS {
                 }
             })
 
+            let responseTimeout = setTimeout(() => {
+                this.waiting = false
+                reject(`Response of POS has not been received in ${this.posTimeout/1000} seconds`)
+            }, this.posTimeout)
+
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
+                clearTimeout(responseTimeout)
                 let response = data
                 if (this.responseAsString) {
                     response = data.toString().slice(1, -2)
                 }
                 let functionCode = data.toString().slice(1, 5)
-                if (functionCode==="0900") { // Sale status messages
-                    if (typeof callback==="function") {
-                        callback(response, data)
-                    }
-                    return
-                }
+
                 if (typeof callback==="function") {
-                    callback(response, data)
+                    if (functionCode==="0900") { // Sale status messages
+                        callback(this.intermediateResponse(response), data)
+                        return
+                    }
+
+                    if (functionCode==="0261")
+                        callback(response, data)
                 }
+
                 this.waiting = false
 
                 resolve(response, data)
@@ -333,6 +376,15 @@ module.exports = class POS {
 
     salesDetail(printOnPos = false) {
         return new Promise((resolve) => {
+
+            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string')
+                return new Promise((resolve, reject) => {
+                    reject("printOnPos must be of type boolean.")
+                })
+
+            if(typeof printOnPos === 'string')
+                printOnPos = (printOnPos === 'true' || printOnPos === '1') ? true:false
+
             let print = printOnPos ? "0":"1"
             let sales = []
 
@@ -467,6 +519,16 @@ module.exports = class POS {
             response.change = chunks[20];
             response.commerceCode = chunks[21];
         }
+        return response;
+    }
+
+    intermediateResponse(payload) {
+        let chunks = payload.split("|")
+        let response = {
+            responseCode: parseInt(chunks[1]),
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+        }
+
         return response;
     }
 }
