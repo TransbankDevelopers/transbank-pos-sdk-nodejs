@@ -42,6 +42,7 @@ module.exports = {
     77: "Debe Ejecutar Cierre",
     78: "Esperando Leer Tarjeta",
     79: "Solicitando Confirmar Monto",
+    80: "Selección de Cuotas",
     81: "Solicitando Ingreso de Clave",
     82: "Enviando transacción al Host",
     88: "Error Cantidad Cuotas",
