@@ -1,3 +1,7 @@
+## [2.1.0] - 02-08-2021
+
+Se añade mensaje intermedio para el código de respuesta 80.
+
 ## [2.0.0] - 25-05-2021
 
 Se solucionan diferentes errores detectados en el SDK y se añaden nuevas características.
@@ -14,7 +18,6 @@ Se solucionan diferentes errores detectados en el SDK y se añaden nuevas caract
 
 ### Changed
 - Los mensajes intermedios ahora son enviados como un objeto que contiene el código de respuesta y el mensaje de respuesta.
-
 
 ## [1.1.0]
 
