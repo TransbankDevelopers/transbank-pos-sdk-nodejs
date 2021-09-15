@@ -14,7 +14,7 @@ module.exports = class POS extends EventEmitter {
         this.connected = false
 
         this.ackTimeout = 2000
-        this.posTimeout = 150000 
+        this.posTimeout = 150000
         this.debugEnabled = false
         this.port = null
         this.responseAsString = true
@@ -101,7 +101,7 @@ module.exports = class POS extends EventEmitter {
             }
 
             this.connecting = true
-            
+
             this.port = new SerialPort(portName, { baudRate, autoOpen: false })
 
             this.port.open((err) => {
@@ -112,7 +112,7 @@ module.exports = class POS extends EventEmitter {
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
-                
+
                 let prettyData = ''
                 data.forEach(char=>{
                     prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`
@@ -190,10 +190,10 @@ module.exports = class POS extends EventEmitter {
 
     }
 
-    async autoconnect() {
+    async autoconnect(baudrate = 115200) {
         // Block so just one autoconnect command can be sent at a time
         if (this.connecting === true) {
-            this.debug("It is already trying to connect to a port and we wait for it to finish")
+            this.debug("It is already trying to connect. Please wait for it to finish")
             return false
         }
 
@@ -215,7 +215,7 @@ module.exports = class POS extends EventEmitter {
         for (let port of ports) {
             this.debug("Trying to connect to " + port.path)
             try {
-                await this.connect(port.path)
+                await this.connect(port.path, baudrate)
                 this.connecting = false;
                 return port
             } catch (e) {
@@ -261,7 +261,7 @@ module.exports = class POS extends EventEmitter {
             let buffer = Buffer.from(LRC.asStxEtx(payload))
             let prettyData = ''
             buffer.forEach(char=>{prettyData += (32 <= char && char<126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`}, '')
-                
+
             this.debug(`💻 > `, buffer, " -> ", `${prettyData}`)
 
             //Send the message
