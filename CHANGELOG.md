@@ -1,3 +1,6 @@
+## [2.1.1] - 15-09-2021
+- Se añade parámetro para configurar _baudrate_ para el método `autoconnect()`
+
 ## [2.1.0] - 02-08-2021
 
 Se añade mensaje intermedio para el código de respuesta 80.
