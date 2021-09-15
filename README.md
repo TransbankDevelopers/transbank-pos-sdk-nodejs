@@ -290,4 +290,5 @@ En ese PR deben incluirse los siguientes cambios:
 2. Modificar el archivo `package.json` y modificar la versión
 
 Luego de obtener aprobación del pull request, debe mezclarse a master e inmediatamente generar un release en GitHub con el tag `vX.Y.Z`. En la descripción del release debes poner lo mismo que agregaste al changelog.
-Adicionalmente, se debe compilar el ejecutable para Windows y Mac (opcionalmente también el de linux), siguiendo las instrucciones de este REDME de como empaquetar la aplicación para cada plataforma. 
+
+Posteriormente, se debe hacer el release en npm. Esto se hace de forma manual usando `npm publish`. Se debe estar logeado `npm login` con la cuenta de TransbankDevelopers
