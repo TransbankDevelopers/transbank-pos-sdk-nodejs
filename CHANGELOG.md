@@ -1,3 +1,6 @@
+## [2.1.2] - 23-09-2021
+- Se mejora el proceso de deployment de cada versión pasando ahora por travis.
+
 ## [2.1.1] - 15-09-2021
 - Se añade parámetro para configurar _baudrate_ para el método `autoconnect()`
 
