@@ -1,0 +1,29 @@
+language: node_js
+os: linux
+dist: xenial
+node_js:
+  - stable
+
+script: npm run test
+
+before_deploy:
+  - npm run build
+
+deploy:
+  - provider: releases
+    skip_cleanup: true
+    name: "$TRAVIS_TAG"
+    token:
+      secure: KYLrM5ne4DcXyeT1Cj/7yCeti9WQkfhREU1zUKmRY4u+5PH9WmKZBL6y1rJKRAqE2rr2HzxM+AxutjPF6ibPCqf/01rIlY5Kk/Bh7rV9SfHk2sjA/UqTtShI1kWFoGEF6tVKM8IyQ8ol7I/ZCwoq1dIm7CdDOOxLbvIT7Q/heptYewnCsvElIi7ILebxtwj55Xdvb95TPrZfgdsg5J+1NzHpZNcbXO++txgGPtKpY2ed9XKgF+FvnR6EEetSMtp1onm3hg+rqdQ7Sk0qxlNuOu0Dsovh5/PPrJyd6KtZwLbkS/DjPxd155kUS81RvsWlLr/jlpdzNmHP0lcWb5iUFxQrELHrkQ5USv/WxTP2G3mIr2gmS6is6AqlXhjNsMeOQdKQ1IZtWWj5uxnn3kQtn1oLHjy0hsgdvdTG/mxj9+8bsF3dqJsdVVmL66zn9SQUSzbk8DTGNianvyk/HyR9JS5LbHVyzSBroQHzgcCs9LmMWeUca59y/b/kqR5bfJPW5eQMZA+PvjaAGy/E18gmDPkjzgkzHHkCDL6QuoyQZTsbEzN2cTWyn3HtTrzTrNJlbzpXg2ykC6sXlPS7a1NouwlFFVvPBBLo0vTl9gdFr3vIjB+QbKBNzs903vtwz7w8Q+3ctbHn+EXEuSJjkDYEgt8uVkkXSlLKrTpHJIlieeI=
+    file: dist/pos.js
+    on:
+      tags: true
+      repo: TransbankDevelopers/transbank-pos-sdk-nodejs
+  - provider: npm
+    skip_cleanup: true
+    email: transbankdevelopers@continuum.cl
+    api_token:
+      secure: "iETf9mX4b0PZVK4gyYa7vl9GXSro2cCEimL93H3az6d8spj4t5Xh/cV1aD+nEsKyfuW6vQCMpT4lH8zNP1K0eTeuijZUIyjzzGeCUpHe+SXCXm4/F/eK8D8WjPquB9zgvXP6KQCWiPIB6tIAfRUqR8RzJC3AAydoy/EktBtzqz86mG3Bh/vODoIu4XZwKo8QwCq2CldQSsgiDzLg0AbCAkqNNlJ1VS7JVEufy2bFNumfdrR3qE4dXh6wO+ccINBWaRO/HQ8Ec7XH2ME+mTUKL7nJB9wstWx0My2yxNtBa3zSaqMwU1RFDYiIdt+rbxhp1Z9QV/8wB5jZK6OiGGmDtyjw187Bad4I6rzgW/F3ShH/Oc+eUobHn6RB55iXZK+sRHfHJM7sveYf/aFO+ToCW1eWE5+ZiW2y9ApdzfthgQt/ABxDIa1rn/mCmioVygwZ3Ro5tfkQ9TGXOKtUAoIxi3bb4cBVaa9F+Ofg7E+8zkujCgZKJQowbAaKzfezxL5zhVNUEMdVNERaMdzB7ZEgZGQVcmUff3ggfxswU/a+IcYNxh3yevdShosG1y9keNkOaHuQ4xUgw3hBBNEEoDoddtNAVoqkjI+RGHqlEAVbUIiQNq6i0luKd0Ja9pJ0xjXrbLyPn3wxnerKNO5qqj1zyS2HSNizw5bK6xrJUBSPZcs="
+    on:
+      tags: true
+      repo: TransbankDevelopers/transbank-pos-sdk-nodejs
