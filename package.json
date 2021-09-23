@@ -7,7 +7,7 @@
     "prepublish": "npm run build",
     "build": "npx babel src --out-dir dist",
     "start": "npx babel src --watch --out-dir dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\""
   },
   "keywords": [
     "POS",
