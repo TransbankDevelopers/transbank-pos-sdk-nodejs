@@ -13,7 +13,7 @@ deploy:
   - provider: releases
     skip_cleanup: true
     name: "$TRAVIS_TAG"
-    token:
+    api_key:
       secure: "CrAgdVuBuo6ADxUTNpQBQB3bc7fUyiS3/mGmNLq1V3VFAhc/N3JCMSHn8gOYmhTUIKU+nCPlvtRwX5JAFeIw2SdksLMU0MmLScgjufi5dtjkbuN1xEj1CwOGR6FLlKiV8g+lsZbbVVozLjG0Z35qH5YiqhXjBd0wz/65w5/u39L8Kcl7u3D/Q+V5SBKiaxgCWWdioSAFDuJnC2eDOoVfmqmuKb6z1PQBRCMhaiSLJxOCy0AByhoTQ88pqEDI2QiBZTwsvcm3ASmSQsBKG8X2feHJlrFghP5dgkugPR7anIi1+GOi/9TGd0KtDZdo6kRANACcLXvJ5DUwwfQWSBVFtfHlKxGhE27iaENQGGx8KcUVkjzqbCEHHTfXe0V9unX+m8RFpIGQ7aQZdz6Hj7uT8svryWaazOUgu13HkSEweaYvhoWZCTB5Q7DmKOBssNnOQym2Ij6TP3WhdQ4LvxAKeyUpICJjrVwQCeQ5q6x/IOs+zafosO2J2g/E6m/BpKU3LBtHrYXwVI2t8MwsqS3eTGO7FLmigUrDUrDOjU5DWpA1P+ngg2yfPPMFzTlBXisRAdV3srFMHlV7OfmNEjmGUYNFnAZ1/0risVDA41F5dU/RdPLEoH9OEo5xNVTvuOJrZAEfdjCkdgX3myHArtz/DDFK499B58wcN5eAjQ+4Pts="
     file: dist/pos.js
     on:
