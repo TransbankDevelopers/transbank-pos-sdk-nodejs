@@ -3,7 +3,6 @@ const SerialPort = require("serialport")
 const EventEmitter = require('events');
 const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
-const { POSAutoservicio } = require("..");
 const ACK = 0x06
 
 module.exports = class POSBase extends EventEmitter {
