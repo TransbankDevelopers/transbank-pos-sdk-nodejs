@@ -61,11 +61,10 @@ module.exports = class POSAutoservicio extends POSBase {
     }
 
     refund() {
-        operationId = operationId.toString().slice(0, 6)
-        return this.send(`1200|${operationId}|`).then((data) => {
+        return this.send(`1200`).then((data) => {
             let chunks = data.split("|")
             return {
-                functionCode: parseInt(chunks[0]),
+                functionCode: parseInt(chunks[0].replace(/\D+/g, '')),
                 responseCode: parseInt(chunks[1]),
                 commerceCode: parseInt(chunks[2]),
                 terminalId: chunks[3],
