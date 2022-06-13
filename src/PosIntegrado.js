@@ -199,14 +199,4 @@ module.exports = class POSIntegrado extends POSBase {
         }
         return response;
     }
-
-    intermediateResponse(payload) {
-        let chunks = payload.split("|")
-        let response = {
-            responseCode: parseInt(chunks[1]),
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-        }
-
-        return response;
-    }
 }
