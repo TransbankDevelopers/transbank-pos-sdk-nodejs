@@ -1,3 +1,10 @@
+## [3.0.0] - 13-06-2022
+- Se agrega soporte para POS Autoservicio
+- Se renombra clase POS a POS Integrado
+- Se agrega clase BasePOS que contiene código compartido por POS Integrado y POS Autoservicio
+- Se arregla bug en mensajes intermedios cuando callback es nulo
+- Se arregla número de funcion en detalle de refund, estaba llegando un caracter hexadicemal extra que ahora es ignorado.
+
 ## [2.1.2] - 23-09-2021
 - Se mejora el proceso de deployment de cada versión pasando ahora por travis.
 
