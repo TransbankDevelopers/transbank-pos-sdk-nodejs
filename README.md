@@ -1,6 +1,6 @@
 # Transbank POS SDK Node.js
 
-SDK Oficial de Transbank para comunicarse con POS Verifone vx520, vx520c e Ingenico 3500
+SDK Oficial de Transbank para comunicarse con POS Verifone vx520, vx520c, Ingenico 3500 y POS Autoservicio
 
 ## Requisitos
 - Node.js 10+
@@ -17,14 +17,17 @@ npm install transbank-pos-sdk
 Como se explica más abajo, la documentación oficial está en [Transbank developers](https://www.transbankdevelopers.cl/producto/posintegrado), pero como una breve introducción: 
 
 ```javascript
-const { POS } = require('transbank-pos-sdk');
-const pos = new POS();
+//Dependiendo del modelo de POS
+const { POSAutoservicio } = require('transbank-pos-sdk');
+const { POSIntegrado } = require('transbank-pos-sdk');
+
+const pos = new POSIntegrado();
 pos.setDebug(true);
 
-pos.autoconnect() // Esta línea permite busca en todos los puertos si existe uno que tenga conctado un equipo POS y se intenta conectar con el primero que encuentra. 
+pos.autoconnect() // Esta línea permite busca en todos los puertos si existe uno que tenga conectado un equipo POS y se intenta conectar con el primero que encuentra. 
     .then((port) => {
         if (port === false) {
-            console.log('No se encontró nigún POS conectado en modo integrado')
+            console.log('No se encontró ningún POS conectado')
         }  
 
         console.log('Connected to PORT: ', port.path)
