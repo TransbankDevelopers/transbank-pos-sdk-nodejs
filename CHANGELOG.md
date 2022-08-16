@@ -1,3 +1,6 @@
+## [3.0.1] - 16-08-2022
+- Se corrige problema detectado al ejecutar connect con _baudrate_ por defecto.
+  
 ## [3.0.0] - 13-06-2022
 - Se agrega soporte para POS Autoservicio
 - Se renombra clase POS a POS Integrado
