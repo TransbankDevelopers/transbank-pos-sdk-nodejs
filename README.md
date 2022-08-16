@@ -256,7 +256,7 @@ La documentación relevante para usar este SDK es:
 
 - Documentación general sobre los productos y sus diferencias:
   [POSIntegrado](https://www.transbankdevelopers.cl/producto/posintegrado)
-- Primeros pasos con [POSIntegrado](https://www.transbankdevelopers.cl/documentacion/posintegrado).
+- Primeros pasos con [POSIntegrado](https://www.transbankdevelopers.cl/documentacion/posintegrado) [POS Autoservicio](https://www.transbankdevelopers.cl/documentacion/pos-autoservicio#primeros-pasos).
 - Referencia detallada sobre [POSIntegrado](https://www.transbankdevelopers.cl/referencia/posintegrado).
 
 ## Información para contribuir y desarrollar este SDK
