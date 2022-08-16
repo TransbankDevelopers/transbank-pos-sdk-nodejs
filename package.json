@@ -1,6 +1,6 @@
 {
   "name": "transbank-pos-sdk",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "SDK Web para POS Integrado en Node.js",
   "main": "index.js",
   "scripts": {
