@@ -79,7 +79,7 @@ module.exports = class POSBase extends EventEmitter {
      */
 
 
-    connect(portName = null, baudRate = this.defaultBaudRate()) {
+    connect(portName = null, baudRate = this.defaultBaudRate) {
         this.debug("Connecting to " + portName + " @" + baudRate)
 
         return new Promise((resolve, reject) => {
