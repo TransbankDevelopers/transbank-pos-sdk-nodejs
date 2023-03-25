@@ -20,7 +20,7 @@
     "@babel/runtime": "^7.11.2",
     "@serialport/parser-inter-byte-timeout": "^9.0.1",
     "lrc-calculator": "^0.1.1",
-    "serialport": "^9.0.1"
+    "serialport": "^9.2.8"
   },
   "devDependencies": {
     "@babel/cli": "^7.11.6",
