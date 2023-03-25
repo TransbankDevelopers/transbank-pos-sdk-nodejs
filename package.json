@@ -18,7 +18,7 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "@babel/runtime": "^7.11.2",
-    "@serialport/parser-inter-byte-timeout": "^9.0.1",
+    "@serialport/parser-inter-byte-timeout": "^9.2.4",
     "lrc-calculator": "^0.1.1",
     "serialport": "^9.0.1"
   },
