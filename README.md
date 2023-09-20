@@ -259,29 +259,61 @@ La documentación relevante para usar este SDK es:
 - Primeros pasos con [POSIntegrado](https://www.transbankdevelopers.cl/documentacion/posintegrado) [POS Autoservicio](https://www.transbankdevelopers.cl/documentacion/pos-autoservicio#primeros-pasos).
 - Referencia detallada sobre [POSIntegrado](https://www.transbankdevelopers.cl/referencia/posintegrado).
 
-## Información para contribuir y desarrollar este SDK
+# Información para contribuir y desarrollar este SDK
+## **Estándares generales**
 
-### Estándares
+- Para los commits nos basamos en las siguientes normas: https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#commits 👀
+- Usamos inglés para los nombres de rama y mensajes de commit 💬
+- Todas las mezclas a master se hacen mediante Pull Request ⬇️
+- Se pueden usar tokens como WIP en el subject de un commit, separando el token con `:`, por ejemplo -> "WIP: this is a useful commit message ✅
+- Se asume que una rama de feature que no se encuentra mezclada no esta terminada⚠️
+- El nombre de las ramas debe ir en minúsculas y las palabras se deben separar con `-` 🔤
+- El nombre de las ramas debe comenzar con alguno de los short lead tokens definidos. Por ejemplo: feat/tokens-configurations 🌿
 
-- Para los commits respetamos las siguientes normas: https://chris.beams.io/posts/git-commit/
-- Usamos ingles, para los mensajes de commit.
-- Se pueden usar tokens como WIP, en el subject de un commit, separando el token con `:`, por ejemplo:
-`WIP: This is a useful commit message`
-- Para los nombres de ramas también usamos ingles.
-- Se asume, que una rama de feature no mezclada, es un feature no terminado.
-- El nombre de las ramas va en minúsculas.
-- Las palabras se separan con `-`.
-- Las ramas comienzan con alguno de los short lead tokens definidos, por ejemplo: `feat/tokens-configuration`
+## **Short lead tokens**
 
-#### Short lead tokens
-##### Commits
-- WIP = Trabajo en progreso.
-##### Ramas
-- feat = Nuevos features
-- chore = Tareas, que no son visibles al usuario.
-- bug = Resolución de bugs.
+`WIP` = En progreso
 
-### Todas las mezclas a master se hacen mediante Pull Request.
+`feat` = Nuevos features
+
+`fix` = Corrección de un bug
+
+`docs` = Cambios solo de documentación
+
+`style` = Cambios que no afectan el significado del código (espaciado, formateo de código, comillas faltantes, etc)
+
+`refactor` = Un cambio en el código que no arregla un bug ni agrega una funcionalidad
+
+`perf` = Cambio que mejora el rendimiento
+
+`test` = Agregar test faltantes o los corrige
+
+`chore` = Cambios en el build o herramientas auxiliares y librerías
+
+
+## **Rules** 📖
+
+1️⃣ -  Si no se añaden test en el pull request, se debe añadir un video o gif mostrando que el cambio no afecta el funcionamiento.
+
+2️⃣ -  El pull request debe tener 2 o más aprobaciones para poder mezclarse.
+
+3️⃣ - Si un commit revierte un commit anterior deberá comenzar con "revert:" seguido del mensaje del commit anterior.
+
+## **Pull Request**
+
+### Asunto ✉️
+
+- Debe comenzar con el short lead token definido para la rama, seguido de : y una breve descripción del cambio.
+- Usar un lenguaje imperativo y en tiempo presente: "change" no "changed" ni "changes".
+- No usar mayúscula en el inicio.
+- No usar punto al final.
+
+### Descripción 📃
+
+- Usar lenguaje imperativo y en tiempo presente.
+- Detallar los cambios que agrega el PR.
+- Todo PR debe incluir test, en caso de no contar con test, se debe incluir evidencias de que el cambio no afecta el funcionamiento.
+- Se pueden usar gif o videos para complementar la descripción o evidenciar el funcionamiento.
 
 ## Generar una nueva versión (con deploy automático a NPM)
 
