@@ -314,10 +314,6 @@ module.exports = class POSBase extends EventEmitter {
         return Buffer.compare(data, Buffer.from([ACK])) === 0
     }
 
-    poll() {
-        return this.send("0100", false)
-    }
-
     /*  
      |--------------------------------------------------------------------------
      | Shared Commands
