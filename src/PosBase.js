@@ -96,7 +96,7 @@ module.exports = class POSBase extends EventEmitter {
                 }).catch(() => {
                     resolve(this.connect(portName, baudRate))
                 })
-                this.connecting = true
+                this.connecting = false
                 return
             }
 
