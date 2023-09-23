@@ -197,21 +197,8 @@ module.exports = class POSBase extends EventEmitter {
             return false
         }
 
-        let vendors = [
-            { vendor: "11ca", product: "0222" }, // Verifone VX520c
-            { vendor: "0b00", product: "0054" }, // Ingenico DESK3500
-        ]
+        let ports = await this.listPorts()
 
-        let availablePorts = await this.listPorts()
-        let ports = []
-        for (let port of availablePorts) {
-            vendors.forEach((vendor) => {
-                if (vendor.vendor === port.vendorId) ports.push(port)
-            })
-        }
-        if (ports.length === 0) {
-            ports = availablePorts
-        }
         for (let port of ports) {
             this.debug("Trying to connect to " + port.path)
             try {
