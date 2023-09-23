@@ -106,6 +106,7 @@ module.exports = class POSBase extends EventEmitter {
 
             this.port.open((err) => {
                 if (err) {
+                    this.debug("Error opening port", err)
                     reject('Could not open serial connection...');
                 }
             })
