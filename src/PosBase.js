@@ -108,6 +108,7 @@ module.exports = class POSBase extends EventEmitter {
                 if (err) {
                     this.debug("Error opening port", err)
                     reject('Could not open serial connection...');
+                    return
                 }
             })
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
