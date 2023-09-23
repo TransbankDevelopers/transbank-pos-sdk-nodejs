@@ -138,6 +138,7 @@ module.exports = class POSBase extends EventEmitter {
 
 
             this.port.on("open", () => {
+                this.debug("Port opened")
                 this.connected = true
                 this.poll().then(() => {
                     this.currentPort = portName
