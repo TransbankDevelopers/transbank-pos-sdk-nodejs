@@ -148,10 +148,8 @@ module.exports = class POSBase extends EventEmitter {
                     this.connected = false
                     this.waiting = false
                     this.currentPort = null
-                    try {
-                        if (this.port.isOpen) await this.port.close();
-                    } catch (e) {
-
+                    if (this.port.isOpen) {
+                        await this.disconnect();
                     }
                     reject(e)
                 })
