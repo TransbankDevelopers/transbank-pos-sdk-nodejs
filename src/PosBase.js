@@ -255,7 +255,8 @@ module.exports = class POSBase extends EventEmitter {
             //Send the message
             this.port.write(buffer, function (err) {
                 if (err) {
-                    reject(new Error(`Failed to send message to POS. ${err}`));
+                    this.debug("Error sending message", err)
+                    reject(new Error('Failed to send message to POS.'));
                 }
             })
 
