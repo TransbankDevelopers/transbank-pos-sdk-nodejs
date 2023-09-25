@@ -200,7 +200,7 @@ module.exports = class POSBase extends EventEmitter {
             return false
         }
 
-        let ports = await this.listPorts()
+        const ports = await this.listPorts()
 
         for (let port of ports) {
             this.debug("Trying to connect to " + port.path)
