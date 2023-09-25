@@ -85,8 +85,7 @@ module.exports = class POSBase extends EventEmitter {
         return new Promise((resolve, reject) => {
             // Block so just one connect command can be sent at a time
             if (this.connecting === true) {
-                reject("Another connect command was already sent and it is still waiting")
-                return
+                return reject(new Error("Another connect command was already sent and it is still waiting"))
             }
 
             if (this.connected) {
@@ -111,8 +110,7 @@ module.exports = class POSBase extends EventEmitter {
             this.port.open((err) => {
                 if (err) {
                     this.debug("Error opening port", err)
-                    reject('Could not open serial connection...');
-                    return
+                    return reject(new Error('Could not open serial connection...'));
                 }
             })
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
@@ -223,13 +221,11 @@ module.exports = class POSBase extends EventEmitter {
     send(payload, waitResponse = true, callback = null) {
         return new Promise((resolve, reject) => {
             if (!this.connected) {
-                reject("You have to connect to a POS to send this message: " + payload.toString())
-                return
+                return reject(new Error("You have to connect to a POS to send this message: " + payload.toString()))
             }
             // Block so just one message can be sent at a time
             if (this.waiting === true) {
-                reject("Another message was already sent and it is still waiting for a response from the POS")
-                return
+                return reject(new Error("Another message was already sent and it is still waiting for a response from the POS"))
             }
             this.waiting = true
 
@@ -237,7 +233,7 @@ module.exports = class POSBase extends EventEmitter {
             let timeout = setTimeout(() => {
                 this.waiting = false
                 clearTimeout(responseTimeout)
-                reject("ACK has not been received in " + this.ackTimeout + " ms.")
+                reject(new Error("ACK has not been received in " + this.ackTimeout + " ms."))
             }, this.ackTimeout)
 
             // Defines what should happen when the ACK is received
@@ -259,13 +255,13 @@ module.exports = class POSBase extends EventEmitter {
             //Send the message
             this.port.write(buffer, function (err) {
                 if (err) {
-                    reject('Failed to send message to POS. Maybe it is disconnected.');
+                    reject(new Error('Failed to send message to POS. Maybe it is disconnected.'));
                 }
             })
 
             let responseTimeout = setTimeout(() => {
                 this.waiting = false
-                reject(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`)
+                reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`))
             }, this.posTimeout)
 
             // Wait for the response and fullfill the Promise
