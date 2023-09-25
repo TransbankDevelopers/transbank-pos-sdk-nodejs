@@ -255,7 +255,7 @@ module.exports = class POSBase extends EventEmitter {
             //Send the message
             this.port.write(buffer, function (err) {
                 if (err) {
-                    reject(new Error('Failed to send message to POS. Maybe it is disconnected.'));
+                    reject(new Error(`Failed to send message to POS. ${err}`));
                 }
             })
 
