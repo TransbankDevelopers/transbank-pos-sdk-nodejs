@@ -72,6 +72,21 @@ module.exports = class POSBase extends EventEmitter {
         return SerialPort.list()
     }
 
+    bufferToPrintableString(buffer) {
+        let printableString = "";
+        buffer.forEach((char, index) => {
+            const lrcIndex = buffer.length - 1;
+            if(index === lrcIndex) {
+                printableString += `{0x${char.toString(16).padStart(2, "0")}}`;
+            }
+            else {
+                printableString += 32 <= char && char < 126 
+                  ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, "0")}}`;
+            }
+        });
+        return printableString;
+    }
+
     /*
      |--------------------------------------------------------------------------
      | Serial Port Handling
