@@ -131,12 +131,7 @@ module.exports = class POSBase extends EventEmitter {
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
-
-                let prettyData = ''
-                data.forEach(char => {
-                    prettyData += (32 <= char && char < 126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`
-                }, '')
-                this.debug(`🤖 > ${prettyData}`, data)
+                this.debug(`IN <-- ${this.bufferToPrintableString(data)}`)
 
                 // Primero, se recibe un ACK
                 if (this.itsAnACK(data)) {
@@ -262,10 +257,8 @@ module.exports = class POSBase extends EventEmitter {
 
             // Prepare the message
             let buffer = Buffer.from(LRC.asStxEtx(payload))
-            let prettyData = ''
-            buffer.forEach(char => { prettyData += (32 <= char && char < 126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}` }, '')
 
-            this.debug(`💻 > `, buffer, " -> ", `${prettyData}`)
+            this.debug(`OUT --> ${this.bufferToPrintableString(buffer)}`)
 
             //Send the message
             this.port.write(buffer, function (err) {
