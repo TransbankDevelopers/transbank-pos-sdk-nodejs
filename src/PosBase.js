@@ -74,8 +74,9 @@ module.exports = class POSBase extends EventEmitter {
 
     bufferToPrintableString(buffer) {
         let printableString = "";
+        const lrcIndex = buffer.length - 1;
+        
         buffer.forEach((char, index) => {
-            const lrcIndex = buffer.length - 1;
             if(index === lrcIndex) {
                 printableString += `{0x${char.toString(16).padStart(2, "0")}}`;
             }
