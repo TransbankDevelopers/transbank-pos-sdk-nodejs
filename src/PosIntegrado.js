@@ -55,8 +55,9 @@ module.exports = class POSIntegrado extends POSBase {
                 return reject(new Error("printOnPos must be of type boolean."))
             }
 
-            if(typeof printOnPos === 'string')
-                printOnPos = (printOnPos === 'true' || printOnPos === '1') ? true:false
+            if(typeof printOnPos === 'string') {
+                printOnPos = (printOnPos === 'true' || printOnPos === '1')
+            }
 
             let print = printOnPos ? "0":"1"
             let sales = []
