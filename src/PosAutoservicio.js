@@ -2,10 +2,6 @@ const POSBase = require('./PosBase')
 
 module.exports = class POSAutoservicio extends POSBase {
 
-    constructor() {
-        super()
-    }
-
     sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)

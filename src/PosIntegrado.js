@@ -3,10 +3,6 @@ const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
 module.exports = class POSIntegrado extends POSBase {
 
-    constructor() {
-        super()
-    }
-
     /*
      |--------------------------------------------------------------------------
      | POS Methods
