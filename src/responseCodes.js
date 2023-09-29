@@ -53,5 +53,5 @@ module.exports = {
     88: "Error Cantidad Cuotas",
     93: "Declinada",
     94: "Error al Procesar Respuesta",
-    95: "Error al Imprimir TASA",
+    95: "Error al Imprimir TASA"
 }
