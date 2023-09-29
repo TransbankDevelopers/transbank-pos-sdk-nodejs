@@ -3,10 +3,6 @@ const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
 module.exports = class POSIntegrado extends POSBase {
 
-    constructor() {
-        super()
-    }
-
     /*
      |--------------------------------------------------------------------------
      | POS Methods
@@ -32,7 +28,7 @@ module.exports = class POSIntegrado extends POSBase {
             try {
                 return this.saleResponse(data)
             } catch (e) {
-                return new Promise((resolve, reject) => {reject(e.getMessage())})
+                throw new Error(e.getMessage())
             }
 
         })
@@ -53,15 +49,15 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     salesDetail(printOnPos = false) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
-            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string')
-                return new Promise((resolve, reject) => {
-                    reject("printOnPos must be of type boolean.")
-                })
+            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string') {
+                return reject(new Error("printOnPos must be of type boolean."))
+            }
 
-            if(typeof printOnPos === 'string')
-                printOnPos = (printOnPos === 'true' || printOnPos === '1') ? true:false
+            if(typeof printOnPos === 'string') {
+                printOnPos = (printOnPos === 'true' || printOnPos === '1')
+            }
 
             let print = printOnPos ? "0":"1"
             let sales = []
@@ -87,9 +83,7 @@ module.exports = class POSIntegrado extends POSBase {
 
     refund(operationId) {
         if (typeof operationId==="undefined") {
-            return new Promise((resolve, reject) => {
-                reject("Operation ID not provided when calling refund method.")
-            })
+            throw new Error("Operation ID not provided when calling refund method.")
         }
 
         operationId = operationId.toString().slice(0, 6)
