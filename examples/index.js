@@ -18,3 +18,4 @@ const pos = new POSIntegrado();
             pos.closeDay().then(response => console.log(response))
         })
     }).catch(error => console.log(error));
+    
