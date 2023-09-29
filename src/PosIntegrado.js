@@ -18,7 +18,7 @@ module.exports = class POSIntegrado extends POSBase {
                 commerceCode: parseInt(chunks[2]),
                 terminalId: chunks[3],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -43,7 +43,7 @@ module.exports = class POSIntegrado extends POSBase {
                 txCount: parseInt(chunks[2]),
                 txTotal: parseInt(chunks[3]),
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -97,7 +97,7 @@ module.exports = class POSIntegrado extends POSBase {
                 authorizationCode: chunks[4].trim(),
                 operationId: chunks[5],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -157,7 +157,7 @@ module.exports = class POSIntegrado extends POSBase {
             employeeId: chunks[15],
             tip: parseInt(chunks[16]),
             feeAmount: (chunks[16]),
-            feeNumber: (chunks[17]),
+            feeNumber: (chunks[17])
         }
     }
 
@@ -185,7 +185,7 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null
         };
         if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
             response.change = chunks[20];
