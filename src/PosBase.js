@@ -140,6 +140,7 @@ module.exports = class POSBase extends EventEmitter {
 
                 // Si se recibió una respuesta (diferente a un ACK) entonces responder con un ACK y mandar el mensaje por callback
                 this.port.write(Buffer.from([ACK]))
+                this.debug(`OUT --> ${this.bufferToPrintableString([ACK])}`)
                 if (typeof this.responseCallback === "function") {
                     this.responseCallback(data)
                 }
