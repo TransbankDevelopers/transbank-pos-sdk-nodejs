@@ -1,7 +1,7 @@
 const LRC = require("lrc-calculator")
-const SerialPort = require("serialport").SerialPort;
+const SerialPort = require("serialport")
 const EventEmitter = require('events');
-const InterByteTimeout = require("@serialport/parser-inter-byte-timeout").InterByteTimeoutParser;
+const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
 const ACK = 0x06
 
@@ -117,11 +117,7 @@ module.exports = class POSBase extends EventEmitter {
 
             this.connecting = true
 
-            this.port = new SerialPort({
-                path: portName,
-                baudRate: baudRate,
-                autoOpen: false
-            })
+            this.port = new SerialPort(portName, { baudRate, autoOpen: false })
 
             this.port.open((err) => {
                 if (err) {
