@@ -72,6 +72,22 @@ module.exports = class POSBase extends EventEmitter {
         return SerialPort.list()
     }
 
+    bufferToPrintableString(buffer) {
+        let printableString = "";
+        const lrcIndex = buffer.length - 1;
+        
+        buffer.forEach((char, index) => {
+            if(index === lrcIndex) {
+                printableString += `{0x${char.toString(16).padStart(2, "0")}}`;
+            }
+            else {
+                printableString += 32 <= char && char < 126 
+                  ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, "0")}}`;
+            }
+        });
+        return printableString;
+    }
+
     /*
      |--------------------------------------------------------------------------
      | Serial Port Handling
@@ -85,8 +101,7 @@ module.exports = class POSBase extends EventEmitter {
         return new Promise((resolve, reject) => {
             // Block so just one connect command can be sent at a time
             if (this.connecting === true) {
-                reject("Another connect command was already sent and it is still waiting")
-                return
+                return reject(new Error("Another connect command was already sent and it is still waiting"))
             }
 
             if (this.connected) {
@@ -96,7 +111,7 @@ module.exports = class POSBase extends EventEmitter {
                 }).catch(() => {
                     resolve(this.connect(portName, baudRate))
                 })
-                this.connecting = true
+                this.connecting = false
                 return
             }
 
@@ -106,18 +121,14 @@ module.exports = class POSBase extends EventEmitter {
 
             this.port.open((err) => {
                 if (err) {
-                    reject('Could not open serial connection...');
+                    this.debug("Error opening port", err)
+                    return reject(new Error('Could not open serial connection...'));
                 }
             })
             this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
 
             this.parser.on("data", (data) => {
-
-                let prettyData = ''
-                data.forEach(char => {
-                    prettyData += (32 <= char && char < 126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}`
-                }, '')
-                this.debug(`🤖 > ${prettyData}`, data)
+                this.debug(`IN <-- ${this.bufferToPrintableString(data)}`)
 
                 // Primero, se recibe un ACK
                 if (this.itsAnACK(data)) {
@@ -129,6 +140,7 @@ module.exports = class POSBase extends EventEmitter {
 
                 // Si se recibió una respuesta (diferente a un ACK) entonces responder con un ACK y mandar el mensaje por callback
                 this.port.write(Buffer.from([ACK]))
+                this.debug(`OUT --> ${this.bufferToPrintableString([ACK])}`)
                 if (typeof this.responseCallback === "function") {
                     this.responseCallback(data)
                 }
@@ -137,6 +149,7 @@ module.exports = class POSBase extends EventEmitter {
 
 
             this.port.on("open", () => {
+                this.debug("Port opened")
                 this.connected = true
                 this.poll().then(() => {
                     this.currentPort = portName
@@ -146,10 +159,8 @@ module.exports = class POSBase extends EventEmitter {
                     this.connected = false
                     this.waiting = false
                     this.currentPort = null
-                    try {
-                        if (this.port.isOpen) await this.port.close();
-                    } catch (e) {
-
+                    if (this.port.isOpen) {
+                        await this.disconnect();
                     }
                     reject(e)
                 })
@@ -197,21 +208,8 @@ module.exports = class POSBase extends EventEmitter {
             return false
         }
 
-        let vendors = [
-            { vendor: "11ca", product: "0222" }, // Verifone VX520c
-            { vendor: "0b00", product: "0054" }, // Ingenico DESK3500
-        ]
+        const ports = await this.listPorts()
 
-        let availablePorts = await this.listPorts()
-        let ports = []
-        for (let port of availablePorts) {
-            vendors.forEach((vendor) => {
-                if (vendor.vendor === port.vendorId) ports.push(port)
-            })
-        }
-        if (ports.length === 0) {
-            ports = availablePorts
-        }
         for (let port of ports) {
             this.debug("Trying to connect to " + port.path)
             try {
@@ -231,13 +229,11 @@ module.exports = class POSBase extends EventEmitter {
     send(payload, waitResponse = true, callback = null) {
         return new Promise((resolve, reject) => {
             if (!this.connected) {
-                reject("You have to connect to a POS to send this message: " + payload.toString())
-                return
+                return reject(new Error("You have to connect to a POS to send this message: " + payload.toString()))
             }
             // Block so just one message can be sent at a time
             if (this.waiting === true) {
-                reject("Another message was already sent and it is still waiting for a response from the POS")
-                return
+                return reject(new Error("Another message was already sent and it is still waiting for a response from the POS"))
             }
             this.waiting = true
 
@@ -245,7 +241,7 @@ module.exports = class POSBase extends EventEmitter {
             let timeout = setTimeout(() => {
                 this.waiting = false
                 clearTimeout(responseTimeout)
-                reject("ACK has not been received in " + this.ackTimeout + " ms.")
+                reject(new Error("ACK has not been received in " + this.ackTimeout + " ms."))
             }, this.ackTimeout)
 
             // Defines what should happen when the ACK is received
@@ -259,21 +255,20 @@ module.exports = class POSBase extends EventEmitter {
 
             // Prepare the message
             let buffer = Buffer.from(LRC.asStxEtx(payload))
-            let prettyData = ''
-            buffer.forEach(char => { prettyData += (32 <= char && char < 126) ? String.fromCharCode(char) : `{0x${char.toString(16).padStart(2, '0')}}` }, '')
 
-            this.debug(`💻 > `, buffer, " -> ", `${prettyData}`)
+            this.debug(`OUT --> ${this.bufferToPrintableString(buffer)}`)
 
             //Send the message
             this.port.write(buffer, function (err) {
                 if (err) {
-                    reject('Failed to send message to POS. Maybe it is disconnected.');
+                    this.debug("Error sending message", err)
+                    reject(new Error('Failed to send message to POS.'));
                 }
             })
 
             let responseTimeout = setTimeout(() => {
                 this.waiting = false
-                reject(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`)
+                reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`))
             }, this.posTimeout)
 
             // Wait for the response and fullfill the Promise
@@ -314,10 +309,6 @@ module.exports = class POSBase extends EventEmitter {
         return Buffer.compare(data, Buffer.from([ACK])) === 0
     }
 
-    poll() {
-        return this.send("0100", false)
-    }
-
     /*  
      |--------------------------------------------------------------------------
      | Shared Commands
@@ -337,7 +328,7 @@ module.exports = class POSBase extends EventEmitter {
                 commerceCode: parseInt(chunks[2]),
                 terminalId: chunks[3],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -346,7 +337,7 @@ module.exports = class POSBase extends EventEmitter {
         let chunks = payload.split("|")
         let response = {
             responseCode: parseInt(chunks[1]),
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            responseMessage: this.getResponseMessage(parseInt(chunks[1]))
         }
 
         return response;

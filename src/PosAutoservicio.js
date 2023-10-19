@@ -2,10 +2,6 @@ const POSBase = require('./PosBase')
 
 module.exports = class POSAutoservicio extends POSBase {
 
-    constructor() {
-        super()
-    }
-
     sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
@@ -43,7 +39,7 @@ module.exports = class POSAutoservicio extends POSBase {
             shareType: chunks[16],
             sharesNumber: chunks[17],
             sharesAmount: chunks[18],
-            sharesTypeComment: chunks[19],
+            sharesTypeComment: chunks[19]
         };
         return response;
     }
@@ -54,9 +50,8 @@ module.exports = class POSAutoservicio extends POSBase {
             try {
                 return this.saleResponse(data)
             } catch (e) {
-                return new Promise((resolve, reject) => { reject(e.getMessage()) })
+                throw new Error(e.getMessage())
             }
-
         })
     }
 
@@ -71,7 +66,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 authorizationCode: chunks[4].trim(),
                 operationId: chunks[5],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1]) === 0,
+                successful: parseInt(chunks[1]) === 0
             }
         })
     }
@@ -87,7 +82,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 terminalId: chunks[3],
                 voucher: chunks[4]?.match(/.{1,40}/g),
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1]) === 0,
+                successful: parseInt(chunks[1]) === 0
             }
         })
     }
@@ -105,7 +100,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 transactionDate: parseInt(chunks[2]),
                 transactionTime: chunks[3],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }

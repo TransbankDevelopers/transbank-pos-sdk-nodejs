@@ -3,10 +3,6 @@ const FUNCTION_CODE_MULTICODE_SALE = '0271';
 
 module.exports = class POSIntegrado extends POSBase {
 
-    constructor() {
-        super()
-    }
-
     /*
      |--------------------------------------------------------------------------
      | POS Methods
@@ -22,7 +18,7 @@ module.exports = class POSIntegrado extends POSBase {
                 commerceCode: parseInt(chunks[2]),
                 terminalId: chunks[3],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -32,7 +28,7 @@ module.exports = class POSIntegrado extends POSBase {
             try {
                 return this.saleResponse(data)
             } catch (e) {
-                return new Promise((resolve, reject) => {reject(e.getMessage())})
+                throw new Error(e.getMessage())
             }
 
         })
@@ -47,21 +43,21 @@ module.exports = class POSIntegrado extends POSBase {
                 txCount: parseInt(chunks[2]),
                 txTotal: parseInt(chunks[3]),
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
 
     salesDetail(printOnPos = false) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
 
-            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string')
-                return new Promise((resolve, reject) => {
-                    reject("printOnPos must be of type boolean.")
-                })
+            if(typeof printOnPos !== 'boolean' && typeof printOnPos !== 'string') {
+                return reject(new Error("printOnPos must be of type boolean."))
+            }
 
-            if(typeof printOnPos === 'string')
-                printOnPos = (printOnPos === 'true' || printOnPos === '1') ? true:false
+            if(typeof printOnPos === 'string') {
+                printOnPos = (printOnPos === 'true' || printOnPos === '1')
+            }
 
             let print = printOnPos ? "0":"1"
             let sales = []
@@ -87,9 +83,7 @@ module.exports = class POSIntegrado extends POSBase {
 
     refund(operationId) {
         if (typeof operationId==="undefined") {
-            return new Promise((resolve, reject) => {
-                reject("Operation ID not provided when calling refund method.")
-            })
+            throw new Error("Operation ID not provided when calling refund method.")
         }
 
         operationId = operationId.toString().slice(0, 6)
@@ -103,7 +97,7 @@ module.exports = class POSIntegrado extends POSBase {
                 authorizationCode: chunks[4].trim(),
                 operationId: chunks[5],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
+                successful: parseInt(chunks[1])===0
             }
         })
     }
@@ -163,7 +157,7 @@ module.exports = class POSIntegrado extends POSBase {
             employeeId: chunks[15],
             tip: parseInt(chunks[16]),
             feeAmount: (chunks[16]),
-            feeNumber: (chunks[17]),
+            feeNumber: (chunks[17])
         }
     }
 
@@ -191,7 +185,7 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null
         };
         if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
             response.change = chunks[20];
