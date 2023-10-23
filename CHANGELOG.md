@@ -1,3 +1,7 @@
+## [3.0.2] - 23-10-2023
+- Se corrige bug detectado en la reconexión del puerto serie
+- Se mejoran los logs de debug
+
 ## [3.0.1] - 16-08-2022
 - Se corrige problema detectado al ejecutar connect con _baudrate_ por defecto.
   
