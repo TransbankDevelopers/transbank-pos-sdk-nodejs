@@ -1,4 +1,4 @@
-## [3.0.2] - 19-10-2023
+## [3.0.2] - 23-10-2023
 - Se corrige bug detectado en la reconexión del puerto serie
 - Se mejoran los logs de debug
 
