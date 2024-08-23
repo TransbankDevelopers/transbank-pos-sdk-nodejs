@@ -17,6 +17,7 @@ module.exports = {
     minimize: true,
   },
   devtool: "source-map",
+  externals: ['serialport'],
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
