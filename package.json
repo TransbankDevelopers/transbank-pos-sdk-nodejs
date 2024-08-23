@@ -4,9 +4,9 @@
   "description": "SDK Web para POS Integrado en Node.js",
   "main": "index.js",
   "scripts": {
-    "prepublish": "npm run build",
-    "build": "npx babel src --out-dir dist",
-    "start": "npx babel src --watch --out-dir dist",
+    "prepublish": "echo \"Error: no test specified\"",
+    "build": "echo \"Error: no test specified\"",
+    "start": "echo \"Error: no test specified\"",
     "test": "echo \"Error: no test specified\""
   },
   "keywords": [
@@ -17,16 +17,11 @@
   "author": "Continuum, Gonzalo De Spírito",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@babel/runtime": "^7.21.0",
-    "@serialport/parser-inter-byte-timeout": "^9.2.4",
+    "@serialport/parser-inter-byte-timeout": "^12.0.0",
     "lrc-calculator": "^0.1.1",
-    "serialport": "^9.2.8"
+    "serialport": "^12.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.11.6",
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-transform-runtime": "^7.11.5",
-    "@babel/preset-env": "^7.11.5",
-    "jest": "^26.4.2"
+    "jest": "^29.7.0"
   }
 }
