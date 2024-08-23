@@ -5,6 +5,7 @@
   "main": "dist/transbank.js",
   "scripts": {
     "prepublish": "npm run build",
+    "dev": "node ./examples/index.js --watch",
     "build": "webpack",
     "start": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
