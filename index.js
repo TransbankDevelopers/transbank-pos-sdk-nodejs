@@ -1,5 +1,5 @@
-const PosIntegrado = require('./dist/PosIntegrado');
-const PosAutoservicio = require('./dist/PosAutoservicio')
+const PosIntegrado = require('./src/PosIntegrado');
+const PosAutoservicio = require('./src/PosAutoservicio')
 
 const Transbank = {};
 Transbank.POSIntegrado = PosIntegrado;
