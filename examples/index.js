@@ -1,7 +1,7 @@
 const { rawlist, editor, select } = require('@inquirer/prompts')
-const { POSAutoservicio, POSIntegrado } = require('../dist/transbank');
+const Transbank = require('../index')
 
-const pos = new POSIntegrado()
+const pos = new Transbank.POSIntegrado()
 pos.setDebug(true)
 
 pos.autoconnect().then(port => {
