@@ -1,8 +1,9 @@
-const PosIntegrado = require('./src/PosIntegrado');
-const PosAutoservicio = require('./src/PosAutoservicio')
+const POSIntegrado = require("./src/PosIntegrado");
+const POSAutoservicio = require("./src/PosAutoservicio");
 
-const Transbank = {};
-Transbank.POSIntegrado = PosIntegrado;
-Transbank.POSAutoservicio = PosAutoservicio;
+const Transbank = {
+  POSIntegrado,
+  POSAutoservicio,
+};
 
 module.exports = Transbank;
