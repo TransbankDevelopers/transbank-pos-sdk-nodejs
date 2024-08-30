@@ -71,33 +71,41 @@ async function main() {
         console.log('\n');
         switch (selectedOption) {
             case 'Poll':
-                console.log('Realizando Poll...');
-                await posMiddleware(async () => await POS.poll());
-                break;
+                {
+                    console.log('Realizando Poll...');
+                    await posMiddleware(async () => await POS.poll());
+                    break;
+                }
             case 'Carga de llaves':
-                console.log('Realizando Carga de llaves...');
-                await posMiddleware(async () => await POS.loadKeys());
-                break;
+                {
+                    console.log('Realizando Carga de llaves...');
+                    await posMiddleware(async () => await POS.loadKeys());
+                    break;
+                }
             case 'Cierre':
-                console.log('Realizando Cierre...');
-                if (isSelfService) {
-                    const sendVoucher = readline.keyInYN('¿Enviar voucher a la caja? ');
-                    await posMiddleware(async () => await POS.closeDay(sendVoucher));
+                {
+                    console.log('Realizando Cierre...');
+                    if (isSelfService) {
+                        const sendVoucher = readline.keyInYN('¿Enviar voucher a la caja? ');
+                        await posMiddleware(async () => await POS.closeDay(sendVoucher));
+                    }
+                    else {
+                        await posMiddleware(async () => await POS.closeDay());
+                    }
+                    break;
                 }
-                else {
-                    await posMiddleware(async () => await POS.closeDay());
-                }
-                break;
             case 'Ultima venta':
-                console.log('Obteniendo última venta...')
-                if (isSelfService) {
-                    const sendVoucher = readline.keyInYN('¿Enviar voucher a la caja? ');
-                    await posMiddleware(async () => await POS.getLastSale(sendVoucher));
+                {
+                    console.log('Obteniendo última venta...')
+                    if (isSelfService) {
+                        const sendVoucher = readline.keyInYN('¿Enviar voucher a la caja? ');
+                        await posMiddleware(async () => await POS.getLastSale(sendVoucher));
+                    }
+                    else {
+                        await posMiddleware(async () => await POS.getLastSale());
+                    }
+                    break;
                 }
-                else {
-                    await posMiddleware(async () => await POS.getLastSale());
-                }
-                break;
             case 'Venta':
                 console.log('Realizando Venta...');
                 {
@@ -114,9 +122,11 @@ async function main() {
                     break;
                 }
             case 'Total de ventas':
-                console.log('Obteniendo total de ventas');
-                await posMiddleware(async () => await POS.getTotals());
-                break;
+                {
+                    console.log('Obteniendo total de ventas');
+                    await posMiddleware(async () => await POS.getTotals());
+                    break;
+                }
             case 'Detalle de ventas':
                 console.log('Obteniendo detalles de ventas');
                 {
@@ -125,18 +135,24 @@ async function main() {
                     break;
                 }
             case 'Modo normal':
-                console.log('Cambiando a modo normal...');
-                await posMiddleware(async () => await POS.changeToNormalMode());
-                break;
+                {
+                    console.log('Cambiando a modo normal...');
+                    await posMiddleware(async () => await POS.changeToNormalMode());
+                    break;
+                }
 
             case 'Inicializacion':
-                console.log('Inicializando...');
-                await posMiddleware(async () => await POS.initialization());
-                break;
+                {
+                    console.log('Inicializando...');
+                    await posMiddleware(async () => await POS.initialization());
+                    break;
+                }
             case 'Respuesta Inicializacion':
-                console.log('Obteniendo respuesta de inicialización...')
-                await posMiddleware(async () => await POS.initializationResponse());
-                break;
+                {
+                    console.log('Obteniendo respuesta de inicialización...')
+                    await posMiddleware(async () => await POS.initializationResponse());
+                    break;
+                }
         }
     }
 }
