@@ -36,8 +36,9 @@ async function posMiddleware(func) {
 
 async function main() {
 
-    const integradoMethods = ['Poll', 'Carga de llaves', 'Cierre', 'Ultima venta', 'Venta', 'Reembolso', 'Total de ventas', 'Detalle de ventas', 'Modo normal'];
-    const autoServicioMethods = ['Poll', 'Carga de llaves', 'Cierre', 'Ultima venta', 'Venta', 'Inicializacion', 'Respuesta Inicializacion'];
+    const commonMethods = ['Poll', 'Carga de llaves', 'Cierre', 'Ultima venta', 'Venta'];
+    const integradoMethods = ['Reembolso', 'Total de ventas', 'Detalle de ventas', 'Modo normal'];
+    const autoServicioMethods = ['Inicializacion', 'Respuesta Inicializacion'];
 
     console.log('\n\nConsola de pruebas para POS Integrado y Autoservicio');
     const posTypeList = ['POS Integrado', 'POS Autoservicio'];
@@ -62,7 +63,7 @@ async function main() {
     await posMiddleware(async () => { return await POS.connect(port, baudRate) })
     isPortOpen = true;
 
-    const methodsList = isSelfService ? autoServicioMethods : integradoMethods;
+    const methodsList = commonMethods.concat(isSelfService ? autoServicioMethods : integradoMethods);
 
     while (true) {
         console.log(`\nComandos disponibles para ${posType}`);
