@@ -35,7 +35,13 @@ module.exports = class POSBase extends EventEmitter {
 
     debug(...args) {
         if (this.debugEnabled) {
-            console.log(...args)
+            const ts = Date.now();
+            const date = new Date(ts);
+            const hours = String(date.getUTCHours()).padStart(2, '0');
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
+            console.log(`${hours}:${minutes}:${seconds}:${milliseconds}`, ...args)
         }
     }
 
