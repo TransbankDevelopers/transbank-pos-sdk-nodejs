@@ -1,4 +1,4 @@
-const { rawlist, editor, select } = require('@inquirer/prompts')
+const { rawlist, input, select } = require('@inquirer/prompts')
 const Transbank = require('../index')
 
 const pos = new Transbank.POSIntegrado()
@@ -86,12 +86,12 @@ async function executeOption(option) {
 }
 
 async function saleOperation() {
-    const amount = await editor({
+    const amount = await input({
         message: 'Ingrese el monto de la venta:',
         default: '1000'
     })
 
-    const ticket = await editor({
+    const ticket = await input({
         message: 'Ingrese el ticket de la venta:',
         default: 'ABC123'
     })
@@ -112,7 +112,7 @@ async function saleOperation() {
         ],
     });
 
-    pos.sale(monto, ticket, true, (intermediateResponse) => console.log(intermediateMessages))
+    pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
         console.log('Respuesta de la venta:', response);
     })
