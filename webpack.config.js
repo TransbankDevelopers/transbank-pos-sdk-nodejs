@@ -1,5 +1,4 @@
 const path = require("path");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   mode: "production",
@@ -19,11 +18,6 @@ module.exports = {
   devtool: "source-map",
   externals: ['serialport'],
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: "types", to: "." }, 
-      ],
-    }),
   ],
   target: "node",
 };
