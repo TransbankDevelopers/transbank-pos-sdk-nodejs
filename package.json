@@ -2,12 +2,13 @@
   "name": "transbank-pos-sdk",
   "version": "3.0.2",
   "description": "SDK Web para POS Integrado en Node.js",
-  "main": "index.js",
+  "main": "dist/transbank.js",
   "scripts": {
     "prepublish": "npm run build",
-    "build": "npx babel src --out-dir dist",
-    "start": "npx babel src --watch --out-dir dist",
-    "test": "echo \"Error: no test specified\""
+    "dev": "node ./examples/index.js --watch",
+    "build": "webpack",
+    "start": "webpack --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "POS",
@@ -17,16 +18,14 @@
   "author": "Continuum, Gonzalo De Spírito",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@babel/runtime": "^7.21.0",
-    "@serialport/parser-inter-byte-timeout": "^9.2.4",
+    "@serialport/parser-inter-byte-timeout": "^12.0.0",
     "lrc-calculator": "^0.1.1",
-    "serialport": "^9.2.8"
+    "serialport": "^12.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.11.6",
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-transform-runtime": "^7.11.5",
-    "@babel/preset-env": "^7.11.5",
-    "jest": "^26.4.2"
+    "inquirer": "^10.1.8",
+    "jest": "^29.7.0",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   }
 }
