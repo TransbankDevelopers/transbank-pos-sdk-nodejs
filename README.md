@@ -3,9 +3,9 @@
 SDK Oficial de Transbank para comunicarse con POS Verifone vx520, vx520c, Ingenico 3500 y POS Autoservicio
 
 ## Requisitos
-- Node.js 10+
+- Node.js 20+
+- Python 3
 - NPM
-- Yarn (recomendable) 
 
 ## Instalación
 Para instalar este SDK en tu proyecto, solo debes incluirlo usando npm/yarn. 
