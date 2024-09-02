@@ -112,7 +112,7 @@ async function saleOperation() {
         ],
     });
 
-    pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
+    await pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
         console.log('Respuesta de la venta:', response);
     })
