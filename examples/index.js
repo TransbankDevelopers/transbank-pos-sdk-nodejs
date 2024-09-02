@@ -77,7 +77,6 @@ async function executeOption(option) {
         case 'exit':
             console.log('Saliendo...')
             return true;
-            break;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
