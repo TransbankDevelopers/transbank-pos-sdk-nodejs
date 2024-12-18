@@ -15,7 +15,13 @@
     "transbank",
     "serial"
   ],
-  "author": "Continuum, Gonzalo De Spírito",
+  "author": {
+    "name": "Transbank Developers",
+    "email": "transbankdevelopers@continuum.cl"
+  },
+  "contributors": [
+    { "name": "Gonzalo De Spírito" }
+  ],
   "license": "BSD-3-Clause",
   "dependencies": {
     "@serialport/parser-inter-byte-timeout": "^12.0.0",
