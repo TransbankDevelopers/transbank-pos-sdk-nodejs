@@ -39,7 +39,6 @@ async function main() {
             }
         }
     }
-    process.exit()
 }
 
 async function showMenu() {
@@ -52,7 +51,7 @@ async function showMenu() {
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
             {name: 'Cerrar Puerto', value: 'closePort'},
-            {name: 'Salir', value: 'exit'},
+            {name: 'Salir', value: 'exit'}
         ]
     })
 
@@ -65,7 +64,7 @@ async function showConnectionMenu() {
         choices: [
             {name: 'Auto conectar POS', value: 'autoConnect'},
             {name: 'Seleccionar puerto manualmente', value: 'listPort'},
-            {name: 'Salir', value: 'exit'},
+            {name: 'Salir', value: 'exit'}
         ]
     })
 
@@ -213,14 +212,14 @@ async function saleOperation() {
         {
             name: 'Si',
             value: true,
-            description: 'Se recibirán mensajes intermedios durante la venta.',
+            description: 'Se recibirán mensajes intermedios durante la venta.'
         },
         {
             name: 'No',
             value: false,
-            description: 'Solo se recibe la respuesta de la venta.',
-        },
-        ],
+            description: 'Solo se recibe la respuesta de la venta.'
+        }
+        ]
     });
 
     await pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))

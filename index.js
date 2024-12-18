@@ -3,7 +3,7 @@ const POSAutoservicio = require("./src/PosAutoservicio");
 
 const Transbank = {
   POSIntegrado,
-  POSAutoservicio,
+  POSAutoservicio
 };
 
 module.exports = Transbank;
