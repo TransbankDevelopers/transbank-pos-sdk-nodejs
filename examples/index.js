@@ -1,29 +1,43 @@
 const { rawlist, input, select } = require('@inquirer/prompts')
 const Transbank = require('../index')
 
+const CLOSE_APP = 0
+const CLOSE_PORT = 1
+const PORT_OPEN = 2
+
 const pos = new Transbank.POSIntegrado()
 pos.setDebug(true)
 
-pos.autoconnect().then(port => {
-    if (port) {
-        console.log('Conectado a', port.path)
-        main()
-    } else {
-        console.log('No se pudo conectar a un POS. Saliendo del programa...')
-        process.exit()
-    }
-}).catch(error => {
-    console.log('Error al conectar:', error)
-    console.log('No se pudo conectar a un POS. Saliendo del programa...')
-    process.exit()
-});
+main()
 
 async function main() {
     let exit = false
+    let isConnected = false
 
     while(!exit) {
-        let option = await showMenu()
-        exit = await executeOption(option)
+        let connectOption = await showConnectionMenu()
+        let connectionOperationResult = await executeConnectionOption(connectOption)
+
+        if(connectionOperationResult == PORT_OPEN) {
+            isConnected = true
+        }
+        
+        if(connectionOperationResult == CLOSE_APP) {
+            exit = true
+        }
+
+        while(!exit && isConnected) {
+            let option = await showMenu()
+            let operationResult = await executeOption(option)
+
+            if(operationResult == CLOSE_PORT) {
+                isConnected = false
+            }
+
+            if(operationResult == CLOSE_APP) {
+                exit = true
+            }
+        }
     }
     process.exit()
 }
@@ -37,8 +51,38 @@ async function showMenu() {
             {name: 'Realizar una devolución', value: 'refund'},
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
+            {name: 'Cerrar Puerto', value: 'closePort'},
             {name: 'Salir', value: 'exit'},
         ]
+    })
+
+    return answer
+}
+
+async function showConnectionMenu() {
+    const answer = await rawlist({
+        message: 'Seleccione una opción:',
+        choices: [
+            {name: 'Auto conectar POS', value: 'autoConnect'},
+            {name: 'Seleccionar puerto manualmente', value: 'listPort'},
+            {name: 'Salir', value: 'exit'},
+        ]
+    })
+
+    return answer
+}
+
+async function showPortMenu(portList) {
+    const choices = portList.map((port) => {
+        return {
+            name: `Puerto ${port.path}`,
+            value: port.path
+        }
+    })
+
+    const answer = await rawlist({
+        message: 'Seleccione una opción:',
+        choices: choices
     })
 
     return answer
@@ -73,15 +117,83 @@ async function executeOption(option) {
                 console.log('Error al cerrar el día:', error)
             });
             break;
+        
+        case 'closePort': {
+            const result = await pos.disconnect()
+
+            if(result) {
+                console.log('Puerto desconectado')
+                return CLOSE_PORT;
+            }
+
+            console.log('No se logro cerrar el puerto')
+            break;
+        }
 
         case 'exit':
             console.log('Saliendo...')
-            return true;
+            return CLOSE_APP;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
             break;
     }
+}
+
+async function executeConnectionOption(option) {
+    switch (option) {
+        case 'autoConnect':
+            await autoConnect()
+            break;
+
+        case 'listPort': {
+            const portList = await pos.listPorts();
+            if(portList.length === 0) {
+                console.log('No hay puertos disponibles')
+                return
+            }
+
+            const selectedPort = await showPortMenu(portList)
+
+            try {
+                const result = await pos.connect(selectedPort)
+
+                if(result) {
+                    console.log('Puerto conectado')
+                    return PORT_OPEN;
+                }
+            } catch(error) {
+                console.log(error.message)
+            }
+
+            console.log('No se logro abrir el puerto')   
+            break;
+        }
+
+        case 'exit':
+            console.log('Saliendo...')
+            return CLOSE_APP;
+
+        default:
+            console.log('Opción no válida. Inténtalo de nuevo.')
+            break;
+    }
+}
+
+async function autoConnect() {
+    return new Promise((resolve) => {
+        pos.autoconnect().then(port => {
+            if (port) {
+                console.log('Conectado a', port.path)
+                resolve(PORT_OPEN)
+            } else {
+                console.log('No se pudo conectar a un POS. Saliendo del programa...')
+            }
+        }).catch(error => {
+            console.log('Error al conectar:', error)
+            console.log('No se pudo conectar a un POS. Saliendo del programa...')
+        });
+    })
 }
 
 async function saleOperation() {
