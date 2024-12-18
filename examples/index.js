@@ -28,7 +28,7 @@ async function main() {
 
         while(!exit && isConnected) {
             let option = await showMenu()
-            operationResult = await executeOption(option)
+            let operationResult = await executeOption(option)
 
             if(operationResult == CLOSE_PORT) {
                 isConnected = false
@@ -118,7 +118,7 @@ async function executeOption(option) {
             });
             break;
         
-        case 'closePort':
+        case 'closePort': {
             const result = await pos.disconnect()
 
             if(result) {
@@ -127,6 +127,8 @@ async function executeOption(option) {
             }
 
             console.log('No se logro cerrar el puerto')
+            break;
+        }
 
         case 'exit':
             console.log('Saliendo...')
@@ -144,7 +146,7 @@ async function executeConnectionOption(option) {
             await autoConnect()
             break;
 
-        case 'listPort':
+        case 'listPort': {
             const portList = await pos.listPorts();
             if(portList.length === 0) {
                 console.log('No hay puertos disponibles')
@@ -166,6 +168,7 @@ async function executeConnectionOption(option) {
 
             console.log('No se logro abrir el puerto')   
             break;
+        }
 
         case 'exit':
             console.log('Saliendo...')
