@@ -186,7 +186,7 @@ module.exports = class POSBase extends EventEmitter {
     disconnect() {
         return new Promise((resolve, reject) => {
 
-            if (!this.port.isOpen) {
+            if (!this.port?.isOpen) {
                 resolve(true)
                 return
             }
