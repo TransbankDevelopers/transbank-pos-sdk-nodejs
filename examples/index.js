@@ -10,7 +10,7 @@ pos.setDebug(true)
 
 main()
 
-async function main() {
+const main = async function() {
     let exit = false
     let isConnected = false
 
@@ -39,10 +39,9 @@ async function main() {
             }
         }
     }
-    process.exit()
 }
 
-async function showMenu() {
+const showMenu = async function() {
     const answer = await rawlist({
         message: 'Seleccione una opción:',
         choices: [
@@ -52,27 +51,27 @@ async function showMenu() {
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
             {name: 'Cerrar Puerto', value: 'closePort'},
-            {name: 'Salir', value: 'exit'},
+            {name: 'Salir', value: 'exit'}
         ]
     })
 
     return answer
 }
 
-async function showConnectionMenu() {
+const showConnectionMenu = async function() {
     const answer = await rawlist({
         message: 'Seleccione una opción:',
         choices: [
             {name: 'Auto conectar POS', value: 'autoConnect'},
             {name: 'Seleccionar puerto manualmente', value: 'listPort'},
-            {name: 'Salir', value: 'exit'},
+            {name: 'Salir', value: 'exit'}
         ]
     })
 
     return answer
 }
 
-async function showPortMenu(portList) {
+const showPortMenu = async function(portList) {
     const choices = portList.map((port) => {
         return {
             name: `Puerto ${port.path}`,
@@ -88,7 +87,7 @@ async function showPortMenu(portList) {
     return answer
 }
 
-async function executeOption(option) {
+const executeOption = async function(option) {
     switch (option) {
         case 'loadKey':
             await pos.loadKeys().then(response => console.log('Respuesta Carga de llaves:', response));
@@ -140,7 +139,7 @@ async function executeOption(option) {
     }
 }
 
-async function executeConnectionOption(option) {
+const executeConnectionOption = async function(option) {
     switch (option) {
         case 'autoConnect':
             await autoConnect()
@@ -180,7 +179,7 @@ async function executeConnectionOption(option) {
     }
 }
 
-async function autoConnect() {
+const autoConnect = async function() {
     return new Promise((resolve) => {
         pos.autoconnect().then(port => {
             if (port) {
@@ -196,7 +195,7 @@ async function autoConnect() {
     })
 }
 
-async function saleOperation() {
+const saleOperation = async function() {
     const amount = await input({
         message: 'Ingrese el monto de la venta:',
         default: '1000'
@@ -213,14 +212,14 @@ async function saleOperation() {
         {
             name: 'Si',
             value: true,
-            description: 'Se recibirán mensajes intermedios durante la venta.',
+            description: 'Se recibirán mensajes intermedios durante la venta.'
         },
         {
             name: 'No',
             value: false,
-            description: 'Solo se recibe la respuesta de la venta.',
-        },
-        ],
+            description: 'Solo se recibe la respuesta de la venta.'
+        }
+        ]
     });
 
     await pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
@@ -233,7 +232,7 @@ async function saleOperation() {
 
 }
 
-async function refundOperation() {
+const refundOperation = async function() {
     const operationId = await editor({
         message: 'Ingresa el número de operación'
     })

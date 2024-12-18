@@ -6,18 +6,18 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "transbank.js",
-    libraryTarget: "commonjs2",
+    libraryTarget: "commonjs2"
   },
   module: {
     rules: [
-    ],
+    ]
   },
   optimization: {
-    minimize: true,
+    minimize: true
   },
   devtool: "source-map",
   externals: ['serialport'],
   plugins: [
   ],
-  target: "node",
+  target: "node"
 };
