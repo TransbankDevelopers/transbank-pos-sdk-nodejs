@@ -1,7 +1,7 @@
 const LRC = require("lrc-calculator")
-const SerialPort = require("serialport")
+const { SerialPort } = require("serialport")
 const EventEmitter = require('events');
-const InterByteTimeout = require("@serialport/parser-inter-byte-timeout")
+const { InterByteTimeoutParser } = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
 const ACK = 0x06
 
@@ -117,7 +117,11 @@ module.exports = class POSBase extends EventEmitter {
 
             this.connecting = true
 
-            this.port = new SerialPort(portName, { baudRate, autoOpen: false })
+            this.port = new SerialPort({
+                path: portName,
+                baudRate: baudRate,
+                autoOpen: false
+            })
 
             this.port.open((err) => {
                 if (err) {
@@ -125,7 +129,7 @@ module.exports = class POSBase extends EventEmitter {
                     return reject(new Error('Could not open serial connection...'));
                 }
             })
-            this.parser = this.port.pipe(new InterByteTimeout({ interval: 100 }))
+            this.parser = this.port.pipe(new InterByteTimeoutParser({ interval: 100 }))
 
             this.parser.on("data", (data) => {
                 this.debug(`IN <-- ${this.bufferToPrintableString(data)}`)
@@ -182,7 +186,7 @@ module.exports = class POSBase extends EventEmitter {
     disconnect() {
         return new Promise((resolve, reject) => {
 
-            if (!this.port.isOpen) {
+            if (!this.port?.isOpen) {
                 resolve(true)
                 return
             }
@@ -217,7 +221,8 @@ module.exports = class POSBase extends EventEmitter {
                 this.connecting = false;
                 return port
             } catch (e) {
-                console.log(e);
+                this.debug("Error to connect " + port.path)
+                console.log(e)
             }
         }
 

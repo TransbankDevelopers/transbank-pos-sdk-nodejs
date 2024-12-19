@@ -3,9 +3,9 @@
 SDK Oficial de Transbank para comunicarse con POS Verifone vx520, vx520c, Ingenico 3500 y POS Autoservicio
 
 ## Requisitos
-- Node.js 10+
+- Node.js 20+
+- Python 3
 - NPM
-- Yarn (recomendable) 
 
 ## Instalación
 Para instalar este SDK en tu proyecto, solo debes incluirlo usando npm/yarn. 
@@ -105,7 +105,7 @@ let connectedToPort = pos.getConnectedPort();
 Este comando, si bien es de uso interno, es posible usarlo públicamente y permite enviar un payload al POS. Este es el 
 método que ocupan todos los siguientes helpers para comunicarse con el POS.
 
-Este método devuelve una promesa. Si `waitResponse` es `false` esta promese se resuelve cuando el comando es recibido 
+Este método devuelve una promesa. Si `waitResponse` es `false` esta promesa se resuelve cuando el comando es recibido 
 correctamente por el POS (se recibe ack). Si `waitResponse`  es `true` la promesa se resuelve cuando llega un mensaje de 
 respuesta del POS (ejemplo, cuando la venta termina y el POS envía el resultado de esta venta).   
 

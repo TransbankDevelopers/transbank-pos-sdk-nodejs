@@ -2,3 +2,10 @@
 node_modules
 src
 .idea
+.travis.yml
+.github
+examples
+tests
+index.js
+package.sh
+webpack.config.js
