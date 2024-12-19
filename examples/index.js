@@ -8,8 +8,6 @@ const PORT_OPEN = 2
 const pos = new Transbank.POSIntegrado()
 pos.setDebug(true)
 
-main()
-
 const main = async function() {
     let exit = false
     let isConnected = false
@@ -243,3 +241,5 @@ const refundOperation = async function() {
         console.log('Error en la devolución:', error)
     });
 }
+
+main()
