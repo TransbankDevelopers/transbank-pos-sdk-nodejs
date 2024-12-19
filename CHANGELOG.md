@@ -1,3 +1,11 @@
+## [4.0.0] - 19-12-2024
+
+### Actualiza
+
+- Se actualiza dependencias del SDK.
+- Se actualiza la versión mínima de Node a >= 20.
+- Se refina el flujo de desconexión del puerto serial.
+
 ## [3.0.2] - 23-10-2023
 - Se corrige bug detectado en la reconexión del puerto serie
 - Se mejoran los logs de debug
