@@ -106,12 +106,13 @@ module.exports = class POSIntegrado extends POSBase {
         return this.send("0300", false)
     }
 
-    sale(amount, ticket, sendStatus = false, callback = null) {
+    sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
         let status = sendStatus ? "1":"0"
+        let voucher = sendVoucher ? "1" : "0"
 
-        return this.send(`0200|${amount}|${ticket}|||${status}`, true, callback).then((data) => {
+        return this.send(`0200|${amount}|${ticket}||${voucher}|${status}`, true, callback).then((data) => {
             return this.saleResponse(data)
         })
     }
