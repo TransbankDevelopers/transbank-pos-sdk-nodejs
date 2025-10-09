@@ -164,9 +164,9 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     saleResponse(payload) {
-        let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-        let response = {
+    let chunks = payload.split("|")
+    let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+    let response = {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
             commerceCode: parseInt(chunks[2]),
@@ -187,7 +187,8 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            voucher: chunks[19]?.match(/.{1,40}/g)
         };
         if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
             response.change = chunks[20];
