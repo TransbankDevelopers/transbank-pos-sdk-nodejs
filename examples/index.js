@@ -45,6 +45,7 @@ const showMenu = async function() {
         choices: [
             {name: 'Carga de llaves', value: 'loadKey'},
             {name: 'Realizar una venta', value: 'sale'},
+            {name: 'Realizar una venta Multicódigo', value: 'multicodeSale'},
             {name: 'Realizar una devolución', value: 'refund'},
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
@@ -93,6 +94,10 @@ const executeOption = async function(option) {
             
         case 'sale':
             await saleOperation()
+            break;
+
+        case 'multicodeSale':
+            await multicodeSaleOperation()
             break;
 
         case 'refund':
@@ -207,21 +212,13 @@ const saleOperation = async function() {
     const intermediateMessages = await select({
     message: 'Recibir mensajes intermedios?',
     choices: [
-        {
-            name: 'Si',
-            value: true,
-            description: 'Se recibirán mensajes intermedios durante la venta.'
-        },
-        {
-            name: 'No',
-            value: false,
-            description: 'Solo se recibe la respuesta de la venta.'
-        }
+            { name: 'Si', value: true },
+            { name: 'No', value: false }
         ]
     });
 
     const printVoucher = await select({
-        message: '¿Imprimir voucher en la respuesta?',
+        message: '¿Desea el voucher en la respuesta JSON?',
         choices: [
             {
                 name: 'Si',
@@ -243,7 +240,52 @@ const saleOperation = async function() {
     .catch(error => {
         console.log('Error en la venta:', error)
     });
+}
 
+const multicodeSaleOperation = async function() {
+    const saleAmount = await input({
+        message: 'Ingrese el monto de la venta (sin vuelto):',
+        default: '1000'
+    });
+
+    const cashbackAmount = await input({
+        message: 'Ingrese el monto del vuelto (0 si no aplica):',
+        default: '0'
+    });
+
+    const ticket = await input({
+        message: 'Ingrese el ticket de la venta:',
+        default: 'MULTI123'
+    });
+
+    const commerceCode = await input({
+        message: 'Ingrese el código de comercio (dejar en 0 si no aplica):',
+        default: '0'
+    });
+
+    const intermediateMessages = await select({
+        message: 'Recibir mensajes intermedios?',
+        choices: [
+            { name: 'Si', value: true },
+            { name: 'No', value: false }
+        ]
+    });
+
+    const printVoucher = await select({
+        message: '¿Desea el voucher en la respuesta JSON?',
+        choices: [
+            { name: 'Si', value: true },
+            { name: 'No', value: false }
+        ]
+    });
+
+    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printVoucher, (intermediateResponse) => console.log(intermediateResponse))
+    .then(response => {
+        console.log('Respuesta de la venta multicódigo:', response);
+    })
+    .catch(error => {
+        console.log('Error en la venta multicódigo:', error)
+    });
 }
 
 const refundOperation = async function() {

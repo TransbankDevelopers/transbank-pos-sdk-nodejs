@@ -117,16 +117,23 @@ module.exports = class POSIntegrado extends POSBase {
         });
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, sendVoucher = false, callback = null) {
-        amount = amount.toString().padStart(9, "0").slice(0, 9)
-        ticket = ticket.toString().padStart(6, "0").slice(0, 6)
-        commerceCode = commerceCode === null ? '0' : commerceCode;
-        let status = sendStatus ? "1":"0"
-        let voucher = sendVoucher ? "1" : "0"
+    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, sendVoucher = false, callback = null) {
+        const numericCashback = parseInt(cashbackAmount) || 0;
+        const commandCode = numericCashback > 0 ? "0280" : "0270";
 
-        return this.send(`0270|${amount}|${ticket}||${voucher}|${status}|${commerceCode}`, true, callback).then((data) => {
-            return this.saleResponse(data)
-        })
+        const amountStr = amount.toString().padStart(9, "0").slice(0, 9);
+        const ticketStr = ticket.toString().padStart(6, "0").slice(0, 6);
+        const statusStr = sendStatus ? "1" : "0";
+        const voucherStr = (numericCashback > 0) ? "0" : (sendVoucher ? "1" : "0");
+        const commerceCodeStr = (commerceCode === null ? '0' : commerceCode.toString()).padStart(12, '0');
+        
+        const cashbackStr = (numericCashback > 0) ? numericCashback.toString().padStart(9, "0").slice(0, 9) : "";
+
+        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherStr}|${statusStr}|${commerceCodeStr}`;
+
+        return this.send(command, true, callback).then((data) => {
+            return this.saleResponse(data);
+        });
     }
 
     /*
@@ -165,8 +172,8 @@ module.exports = class POSIntegrado extends POSBase {
 
     saleResponse(payload) {
     let chunks = payload.split("|")
-    let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-    let response = {
+        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        let response = {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
             commerceCode: parseInt(chunks[2]),
@@ -188,12 +195,25 @@ module.exports = class POSIntegrado extends POSBase {
             realTime: chunks[16],
             employeeId: chunks[17],
             tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
-            voucher: chunks[19]?.match(/.{1,40}/g)
         };
-        if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
-            response.change = chunks[20];
-            response.commerceCode = chunks[21];
+
+        const functionCodeStr = chunks[0].toString();
+        
+        // El voucher puede estar en el campo 19 para ventas normales y multicódigo
+        if (chunks[19] && chunks[19].length > 1) {
+            response.voucher = chunks[19]?.match(/.{1,40}/g)
         }
-        return response;
-    }
+        
+        // Campos específicos de multicódigo
+        if (functionCodeStr === '271' || functionCodeStr === '281') {
+            response.cashback = parseInt(chunks[20]) || 0;
+            response.providerCommerceCode = chunks[21]; // Usar un campo nuevo para no sobreescribir
+            if (functionCodeStr === '281') {
+                response.tip = null;
+            }
+        }
+    
+    return response;
+}
+
 }
