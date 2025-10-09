@@ -221,7 +221,7 @@ const saleOperation = async function() {
     });
 
     const printVoucher = await select({
-        message: '¿Imprimir Voucher en la respuesta?',
+        message: '¿Imprimir voucher en la respuesta?',
         choices: [
             {
                 name: 'Si',
@@ -231,7 +231,7 @@ const saleOperation = async function() {
             {
                 name: 'No',
                 value: false,
-                description: 'No se imprimirá el voucher en la respuesta'
+                description: 'El POS imprimirá el voucher'
             }
         ]
     });
