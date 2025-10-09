@@ -117,13 +117,14 @@ module.exports = class POSIntegrado extends POSBase {
         })
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, callback = null) {
+    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, sendVoucher = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
         commerceCode = commerceCode === null ? '0' : commerceCode;
         let status = sendStatus ? "1":"0"
+        let voucher = sendVoucher ? "1" : "0"
 
-        return this.send(`0270|${amount}|${ticket}|||${status}|${commerceCode}`, true, callback).then((data) => {
+        return this.send(`0270|${amount}|${ticket}||${voucher}|${status}|${commerceCode}`, true, callback).then((data) => {
             return this.saleResponse(data)
         })
     }
