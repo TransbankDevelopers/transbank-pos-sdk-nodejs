@@ -268,8 +268,8 @@ const multicodeSaleOperation = async function() {
 
     let printOnPOS = true;
     
-    if (parseInt(cashbackAmount) <= 0) {
-        const printOnPOS = await select({
+    if (Number.parseInt(cashbackAmount) <= 0) {
+        printOnPOS = await select({
         message: '¿Desea el voucher en la respuesta JSON?',
         choices: [
             {
@@ -284,8 +284,6 @@ const multicodeSaleOperation = async function() {
             }
         ]
     });
-    } else {
-        printOnPOS = true;
     }
 
     await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printOnPOS, (intermediateResponse) => console.log(intermediateResponse)) // Usar printOnPOS

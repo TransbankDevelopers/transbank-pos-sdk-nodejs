@@ -118,7 +118,7 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, printOnPOS = false, callback = null) {
-        const numericCashback = parseInt(cashbackAmount) || 0;
+        const numericCashback = Number.parseInt(cashbackAmount) || 0;
         const commandCode = numericCashback > 0 ? "0280" : "0270";
 
         const amountStr = amount.toString().padStart(9, "0").slice(0, 9);
@@ -203,7 +203,7 @@ module.exports = class POSIntegrado extends POSBase {
                 realDate: chunks[15],
                 realTime: chunks[16],
                 employeeId: chunks[17],
-                tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+                tip: chunks[18] === '' ? null : Number.parseInt(chunks[18])
             };
 
             const functionCodeStr = response.functionCode.toString(); 
@@ -213,7 +213,7 @@ module.exports = class POSIntegrado extends POSBase {
             }
             
             if (functionCodeStr === '271' || functionCodeStr === '281') {
-                response.cashback = parseInt(chunks[20]) || 0;
+                response.cashback = Number.parseInt(chunks[20]) || 0;
                 response.providerCommerceCode = chunks[21]; 
             }
         
