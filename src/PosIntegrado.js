@@ -117,24 +117,21 @@ module.exports = class POSIntegrado extends POSBase {
         });
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, sendVoucher = false, callback = null) {
+    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, printOnPOS = false, callback = null) {
         const numericCashback = parseInt(cashbackAmount) || 0;
         const commandCode = numericCashback > 0 ? "0280" : "0270";
 
         const amountStr = amount.toString().padStart(9, "0").slice(0, 9);
         const ticketStr = ticket.toString().padStart(6, "0").slice(0, 6);
         const statusStr = sendStatus ? "1" : "0";
-        const voucherStr = (numericCashback > 0) ? "0" : (sendVoucher ? "1" : "0");
+        const voucherPrintCommand = printOnPOS ? "1" : "0";
         
         const actualCommerceCode = commerceCode === null ? '0' : commerceCode.toString().padStart(12, '0');
-        const actualCashbackAmount = numericCashback;
+        const actualCashbackAmount = numericCashback; // Guardamos el valor numérico
         
         const cashbackStr = (numericCashback > 0) ? numericCashback.toString().padStart(9, "0").slice(0, 9) : "";
 
-        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherStr}|${statusStr}|${actualCommerceCode}`;
-
-        // AÑADIR ESTA LÍNEA PARA DEPURACIÓN
-        console.log(`[DEBUG] Comando construido: ${command}`);
+        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherPrintCommand}|${statusStr}|${actualCommerceCode}`; // Usar actualCommerceCode en el comando
 
         return this.send(command, true, callback).then((data) => {
             const parsedResponse = this.saleResponse(data);

@@ -269,7 +269,7 @@ const multicodeSaleOperation = async function() {
     let printOnPOS = true;
     
     if (parseInt(cashbackAmount) <= 0) {
-        printOnPOS = await select({
+        const printOnPOS = await select({
         message: '¿Desea el voucher en la respuesta JSON?',
         choices: [
             {
