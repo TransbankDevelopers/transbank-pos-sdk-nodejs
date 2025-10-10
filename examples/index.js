@@ -286,7 +286,7 @@ const multicodeSaleOperation = async function() {
     });
     }
 
-    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printOnPOS, (intermediateResponse) => console.log(intermediateResponse)) // Usar printOnPOS
+    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printOnPOS, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
         console.log('Respuesta de la venta multicódigo:', response);
     })

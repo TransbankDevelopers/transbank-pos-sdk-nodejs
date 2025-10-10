@@ -127,11 +127,11 @@ module.exports = class POSIntegrado extends POSBase {
         const voucherPrintCommand = printOnPOS ? "1" : "0";
         
         const actualCommerceCode = commerceCode === null ? '0' : commerceCode.toString().padStart(12, '0');
-        const actualCashbackAmount = numericCashback; // Guardamos el valor numérico
+        const actualCashbackAmount = numericCashback;
         
         const cashbackStr = (numericCashback > 0) ? numericCashback.toString().padStart(9, "0").slice(0, 9) : "";
 
-        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherPrintCommand}|${statusStr}|${actualCommerceCode}`; // Usar actualCommerceCode en el comando
+        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherPrintCommand}|${statusStr}|${actualCommerceCode}`;
 
         return this.send(command, true, callback).then((data) => {
             const parsedResponse = this.saleResponse(data);
