@@ -117,22 +117,31 @@ module.exports = class POSIntegrado extends POSBase {
         });
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, sendVoucher = false, callback = null) {
+    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, printOnPOS = false, callback = null) {
         const numericCashback = parseInt(cashbackAmount) || 0;
         const commandCode = numericCashback > 0 ? "0280" : "0270";
 
         const amountStr = amount.toString().padStart(9, "0").slice(0, 9);
         const ticketStr = ticket.toString().padStart(6, "0").slice(0, 6);
         const statusStr = sendStatus ? "1" : "0";
-        const voucherStr = (numericCashback > 0) ? "0" : (sendVoucher ? "1" : "0");
-        const commerceCodeStr = (commerceCode === null ? '0' : commerceCode.toString()).padStart(12, '0');
+        const voucherPrintCommand = printOnPOS ? "1" : "0";
+        
+        const actualCommerceCode = commerceCode === null ? '0' : commerceCode.toString().padStart(12, '0');
+        const actualCashbackAmount = numericCashback; // Guardamos el valor numérico
         
         const cashbackStr = (numericCashback > 0) ? numericCashback.toString().padStart(9, "0").slice(0, 9) : "";
 
-        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherStr}|${statusStr}|${commerceCodeStr}`;
+        const command = `${commandCode}|${amountStr}|${ticketStr}|${cashbackStr}|${voucherPrintCommand}|${statusStr}|${actualCommerceCode}`; // Usar actualCommerceCode en el comando
 
         return this.send(command, true, callback).then((data) => {
-            return this.saleResponse(data);
+            const parsedResponse = this.saleResponse(data);
+            
+            if (parsedResponse.functionCode.toString() === '281') {
+                parsedResponse.cashbackSent = actualCashbackAmount;
+                parsedResponse.commerceCodeSent = actualCommerceCode;
+            }
+
+            return parsedResponse;
         });
     }
 
@@ -171,49 +180,44 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     saleResponse(payload) {
-    let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-        let response = {
-            functionCode: parseInt(chunks[0]),
-            responseCode: parseInt(chunks[1]),
-            commerceCode: parseInt(chunks[2]),
-            terminalId: chunks[3],
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-            successful: parseInt(chunks[1])===0,
-            ticket: chunks[4],
-            authorizationCode: authorizationCode,
-            amount: parseInt(chunks[6]),
-            sharesNumber: chunks[7],
-            sharesAmount: chunks[8],
-            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
-            operationNumber: chunks[10],
-            cardType: chunks[11],
-            accountingDate: chunks[12],
-            accountNumber: chunks[13],
-            cardBrand: chunks[14],
-            realDate: chunks[15],
-            realTime: chunks[16],
-            employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
-        };
+        let chunks = payload.split("|")
+            let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+            let response = {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                commerceCode: parseInt(chunks[2]),
+                terminalId: chunks[3],
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0,
+                ticket: chunks[4],
+                authorizationCode: authorizationCode,
+                amount: parseInt(chunks[6]),
+                sharesNumber: chunks[7],
+                sharesAmount: chunks[8],
+                last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
+                operationNumber: chunks[10],
+                cardType: chunks[11],
+                accountingDate: chunks[12],
+                accountNumber: chunks[13],
+                cardBrand: chunks[14],
+                realDate: chunks[15],
+                realTime: chunks[16],
+                employeeId: chunks[17],
+                tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            };
 
-        const functionCodeStr = chunks[0].toString();
-        
-        // El voucher puede estar en el campo 19 para ventas normales y multicódigo
-        if (chunks[19] && chunks[19].length > 1) {
-            response.voucher = chunks[19]?.match(/.{1,40}/g)
-        }
-        
-        // Campos específicos de multicódigo
-        if (functionCodeStr === '271' || functionCodeStr === '281') {
-            response.cashback = parseInt(chunks[20]) || 0;
-            response.providerCommerceCode = chunks[21]; // Usar un campo nuevo para no sobreescribir
-            if (functionCodeStr === '281') {
-                response.tip = null;
+            const functionCodeStr = response.functionCode.toString(); 
+
+            if (functionCodeStr !== '281' && chunks[19] && chunks[19].length > 1) {
+                response.voucher = chunks[19]?.match(/.{1,40}/g)
             }
-        }
-    
-    return response;
-}
+            
+            if (functionCodeStr === '271' || functionCodeStr === '281') {
+                response.cashback = parseInt(chunks[20]) || 0;
+                response.providerCommerceCode = chunks[21]; 
+            }
+        
+        return response;
+    }
 
 }

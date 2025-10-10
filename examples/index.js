@@ -1,7 +1,6 @@
 const { rawlist, input, select } = require('@inquirer/prompts')
 const Transbank = require('../index')
 
-const CLOSE_APP = 0
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
 
@@ -19,10 +18,6 @@ const main = async function() {
         if(connectionOperationResult == PORT_OPEN) {
             isConnected = true
         }
-        
-        if(connectionOperationResult == CLOSE_APP) {
-            exit = true
-        }
 
         while(!exit && isConnected) {
             let option = await showMenu()
@@ -30,10 +25,6 @@ const main = async function() {
 
             if(operationResult == CLOSE_PORT) {
                 isConnected = false
-            }
-
-            if(operationResult == CLOSE_APP) {
-                exit = true
             }
         }
     }
@@ -134,7 +125,9 @@ const executeOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            return CLOSE_APP;
+            pos.disconnect();
+            process.exit(0);
+            break;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -174,7 +167,9 @@ const executeConnectionOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            return CLOSE_APP;
+            pos.disconnect();
+            process.exit(0);
+            break;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -271,15 +266,29 @@ const multicodeSaleOperation = async function() {
         ]
     });
 
-    const printVoucher = await select({
+    let printOnPOS = true;
+    
+    if (parseInt(cashbackAmount) <= 0) {
+        const printOnPOS = await select({
         message: '¿Desea el voucher en la respuesta JSON?',
         choices: [
-            { name: 'Si', value: true },
-            { name: 'No', value: false }
+            {
+                name: 'Si',
+                value: true,
+                description: 'Se imprimirá el voucher en la respuesta' 
+            },
+            {
+                name: 'No',
+                value: false,
+                description: 'El POS imprimirá el voucher'
+            }
         ]
     });
+    } else {
+        printOnPOS = true;
+    }
 
-    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printVoucher, (intermediateResponse) => console.log(intermediateResponse))
+    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printOnPOS, (intermediateResponse) => console.log(intermediateResponse)) // Usar printOnPOS
     .then(response => {
         console.log('Respuesta de la venta multicódigo:', response);
     })
