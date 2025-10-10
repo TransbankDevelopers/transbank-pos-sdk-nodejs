@@ -1,8 +1,7 @@
 const POSBase = require('./PosBase')
 const FUNCTION_CODE_MULTICODE_SALE = '0271';
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
-const FUNCTION_CODE_MULTICODE_CASHBACK_SALE_REQUEST = '0280';
-const FUNCTION_CODE_MULTICODE_CASHBACK_SALE_RESPONSE = '281';
+const FUNCTION_CODE_SALE_REQUEST = '0200';
 
 module.exports = class POSIntegrado extends POSBase {
 
@@ -59,26 +58,26 @@ module.exports = class POSIntegrado extends POSBase {
         return (value === true || value === 'true') ? "1" : "0";
     }
 
-    getCommandParameters(amount, ticket, commerceCode, cashbackAmount, sendStatus, sendVoucher) {
-        const numericCashback = Number.parseInt(cashbackAmount) || 0;
-        const hasCashback = numericCashback > 0;
-
+    getCommandParameters(amount, ticket, commerceCode, sendStatus, sendVoucher) {
+        const isMulticodeSale = commerceCode !== null && commerceCode !== '0';
+        const commandCode = isMulticodeSale 
+            ? FUNCTION_CODE_MULTICODE_SALE_REQUEST 
+            : FUNCTION_CODE_SALE_REQUEST;
+        
         return {
-            commandCode: hasCashback ? FUNCTION_CODE_MULTICODE_CASHBACK_SALE_REQUEST : FUNCTION_CODE_MULTICODE_SALE_REQUEST,
+            commandCode: this.formatNumericString(commandCode, 4),
             amountStr: this.formatNumericString(amount, 9),
             ticketStr: this.formatNumericString(ticket, 6),
-            cashbackStr: hasCashback ? this.formatNumericString(numericCashback, 9) : "",
             statusStr: this.getBooleanFlag(sendStatus),
-            voucherStr: hasCashback ? "0" : this.getBooleanFlag(sendVoucher),
-            commerceCodeStr: this.formatNumericString(commerceCode ?? '0', 12),
-            numericCashback
+            voucherStr: this.getBooleanFlag(sendVoucher),
+            commerceCodeStr: this.formatNumericString(commerceCode ?? '0', 12)
         };
     }
 
 
 
     buildMulticodeSaleCommand(params) {
-        return `${params.commandCode}|${params.amountStr}|${params.ticketStr}|${params.cashbackStr}|${params.voucherStr}|${params.statusStr}|${params.commerceCodeStr}`;
+        return `${params.commandCode}|${params.amountStr}|${params.ticketStr}||${params.voucherStr}|${params.statusStr}|${params.commerceCodeStr}`;
     }
 
     salesDetail(printOnPos = false) {
@@ -150,18 +149,13 @@ module.exports = class POSIntegrado extends POSBase {
         });
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, cashbackAmount = 0, sendStatus = false, sendVoucher = false, callback = null) {
-        const params = this.getCommandParameters(amount, ticket, commerceCode, cashbackAmount, sendStatus, sendVoucher);
+    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, sendVoucher = false, callback = null) {
+        const params = this.getCommandParameters(amount, ticket, commerceCode, sendStatus, sendVoucher);
         const command = this.buildMulticodeSaleCommand(params);
 
         return this.send(command, true, callback).then((data) => {
             const parsedResponse = this.saleResponse(data);
-            
-            if (parsedResponse.functionCode.toString() === FUNCTION_CODE_MULTICODE_CASHBACK_SALE_RESPONSE) {
-                parsedResponse.cashbackSent = params.numericCashback;
-                parsedResponse.commerceCodeSent = params.commerceCodeStr;
-            }
-
+            parsedResponse.commerceCodeSent = params.commerceCodeStr;
             return parsedResponse;
         });
     }
@@ -226,21 +220,18 @@ module.exports = class POSIntegrado extends POSBase {
                 employeeId: chunks[17],
                 tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
                 commerceCodeSent: null,
-                providerCommerceCode: null,
                 voucher: null
             };
 
             const functionCodeStr = response.functionCode.toString(); 
 
-            if (functionCodeStr !== FUNCTION_CODE_MULTICODE_CASHBACK_SALE_RESPONSE && chunks[19] 
-                && chunks[19].length > 1) {
+            if (functionCodeStr !== FUNCTION_CODE_MULTICODE_SALE && chunks[19] && chunks[19].length > 1) {
                 response.voucher = chunks[19]?.match(/.{1,40}/g)
             }
             
-            if (functionCodeStr === FUNCTION_CODE_MULTICODE_SALE || 
-                functionCodeStr === FUNCTION_CODE_MULTICODE_CASHBACK_SALE_RESPONSE) {
-                response.cashback = Number.parseInt(chunks[20]) || 0;
-                response.providerCommerceCode = chunks[21]; 
+            if (functionCodeStr === FUNCTION_CODE_MULTICODE_SALE) {
+                response.providerCommerceCode = chunks[21] || null;
+                response.commerceCodeSent = chunks[21] || null;
             }
         
         return response;

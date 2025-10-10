@@ -239,13 +239,8 @@ const saleOperation = async function() {
 
 const multicodeSaleOperation = async function() {
     const saleAmount = await input({
-        message: 'Ingrese el monto de la venta (sin vuelto):',
+        message: 'Ingrese el monto de la venta:',
         default: '1000'
-    });
-
-    const cashbackAmount = await input({
-        message: 'Ingrese el monto del vuelto (0 si no aplica):',
-        default: '0'
     });
 
     const ticket = await input({
@@ -265,11 +260,8 @@ const multicodeSaleOperation = async function() {
             { name: 'No', value: false }
         ]
     });
-
-    let printOnPOS = true;
     
-    if (Number.parseInt(cashbackAmount) <= 0) {
-        printOnPOS = await select({
+    const printVoucher = await select({
         message: '¿Desea el voucher en la respuesta JSON?',
         choices: [
             {
@@ -284,9 +276,15 @@ const multicodeSaleOperation = async function() {
             }
         ]
     });
-    }
 
-    await pos.multicodeSale(saleAmount, ticket, commerceCode, cashbackAmount, intermediateMessages, printOnPOS, (intermediateResponse) => console.log(intermediateResponse))
+    await pos.multicodeSale(
+        saleAmount, 
+        ticket, 
+        commerceCode, 
+        intermediateMessages, 
+        printVoucher, 
+        (intermediateResponse) => console.log(intermediateResponse)
+    )
     .then(response => {
         console.log('Respuesta de la venta multicódigo:', response);
     })
