@@ -294,7 +294,7 @@ const multicodeSaleOperation = async function() {
 }
 
 const refundOperation = async function() {
-    const operationId = await editor({
+    const operationId = await input({
         message: 'Ingresa el número de operación'
     })
 
