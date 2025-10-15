@@ -117,24 +117,29 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
-        amount = amount.toString().padStart(9, "0").slice(0, 9);
-        ticket = ticket.toString().padStart(6, "0").slice(0, 6);
-        let status = sendStatus ? "1" : "0";
-        let voucher = sendVoucher ? "1" : "0";
+        const amountStr = this.formatNumericString(amount, 9);
+        const ticketStr = this.formatNumericString(ticket, 6);
+        const statusStr = this.getBooleanFlag(sendStatus);
+        const voucherStr = this.getBooleanFlag(sendVoucher);
 
-        return this.send(`0200|${amount}|${ticket}||${voucher}|${status}`, true, callback).then((data) => {
+        const command = `${FUNCTION_CODE_SALE_REQUEST}|${amountStr}|${ticketStr}||${voucherStr}|${statusStr}`;
+
+        return this.send(command, true, callback).then((data) => {
             return this.saleResponse(data);
         });
     }
 
     multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, sendVoucher = false, callback = null) {
-        const params = this.getCommandParameters(amount, ticket, commerceCode, sendStatus, sendVoucher);
-        const command = this.buildMulticodeSaleCommand(params);
+        const amountStr = this.formatNumericString(amount, 9);
+        const ticketStr = this.formatNumericString(ticket, 6);
+        const statusStr = this.getBooleanFlag(sendStatus);
+        const voucherStr = this.getBooleanFlag(sendVoucher);
+        const commerceCodeStr = commerceCode ? commerceCode.toString() : '';
+
+        const command = `${FUNCTION_CODE_MULTICODE_SALE_REQUEST}|${amountStr}|${ticketStr}||${voucherStr}|${statusStr}|${commerceCodeStr}`;
 
         return this.send(command, true, callback).then((data) => {
-            const parsedResponse = this.saleResponse(data);
-            parsedResponse.commerceCodeSent = params.commerceCodeStr;
-            return parsedResponse;
+            return this.multicodeSaleResponse(data);
         });
     }
 
