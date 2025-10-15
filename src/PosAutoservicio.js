@@ -2,6 +2,62 @@ const POSBase = require('./PosBase')
 
 module.exports = class POSAutoservicio extends POSBase {
 
+    /*
+     |--------------------------------------------------------------------------
+     | Auxiliary Methods
+     |--------------------------------------------------------------------------
+     */
+
+    formatNumericString(value, length = 9) {
+        return value.toString().padStart(length, "0").slice(0, length);
+    }
+
+    getBooleanFlag(value) {
+        return (value === true || value === 'true') ? "1" : "0";
+    }
+
+    getBaseResponse(chunks) {
+        return {
+            functionCode: Number.parseInt(chunks[0]),
+            responseCode: Number.parseInt(chunks[1]),
+            commerceCode: Number.parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(Number.parseInt(chunks[1])),
+            successful: Number.parseInt(chunks[1]) === 0
+        };
+    }
+
+    getBaseSaleResponse(chunks) {
+        const baseResponse = this.getBaseResponse(chunks);
+        const authorizationCode = chunks[5]?.trim() ?? null;
+
+        return {
+            ...baseResponse,
+            ticket: chunks[4],
+            authorizationCode,
+            amount: Number.parseInt(chunks[6]),
+            sharesNumber: chunks[7],
+            sharesAmount: chunks[8],
+            last4Digits: chunks[9] === '' ? null : Number.parseInt(chunks[9]),
+            operationNumber: chunks[10],
+            cardType: chunks[11],
+            accountingDate: chunks[12],
+            accountNumber: chunks[13],
+            cardBrand: chunks[14],
+            realDate: chunks[15],
+            realTime: chunks[16],
+            employeeId: chunks[17],
+            tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
+            voucher: null
+        };
+    }
+
+    /*
+     |--------------------------------------------------------------------------
+     | POS Methods
+     |--------------------------------------------------------------------------
+     */
+
     sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
         amount = amount.toString().padStart(9, "0").slice(0, 9)
         ticket = ticket.toString().padStart(6, "0").slice(0, 6)
@@ -11,37 +67,6 @@ module.exports = class POSAutoservicio extends POSBase {
         return this.send(`0200|${amount}|${ticket}|${voucher}|${status}`, true, callback).then((data) => {
             return this.saleResponse(data)
         })
-    }
-
-    saleResponse(payload) {
-        let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-
-        let response = {
-            functionCode: parseInt(chunks[0]),
-            responseCode: parseInt(chunks[1]),
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-            commerceCode: parseInt(chunks[2]),
-            terminalId: chunks[3],
-            successful: parseInt(chunks[1]) === 0,
-            ticket: chunks[4],
-            authorizationCode: authorizationCode,
-            amount: parseInt(chunks[6]),
-            last4Digits: chunks[7] !== '' ? parseInt(chunks[7]) : null,
-            operationNumber: chunks[8],
-            cardType: chunks[9],
-            accountingDate: chunks[10],
-            accountNumber: chunks[11],
-            cardBrand: chunks[12],
-            realDate: chunks[13],
-            realTime: chunks[14],
-            voucher: chunks[15]?.match(/.{1,40}/g),
-            shareType: chunks[16],
-            sharesNumber: chunks[17],
-            sharesAmount: chunks[18],
-            sharesTypeComment: chunks[19]
-        };
-        return response;
     }
 
     getLastSale(sendVoucher = false) {
@@ -91,6 +116,12 @@ module.exports = class POSAutoservicio extends POSBase {
         return this.send("0070", false)
     }
 
+    /*
+     |--------------------------------------------------------------------------
+     | Responses
+     |--------------------------------------------------------------------------
+     */
+
     initializationResponse() {
         return this.send("0080").then((data) => {
             let chunks = data.split("|")
@@ -103,6 +134,37 @@ module.exports = class POSAutoservicio extends POSBase {
                 successful: parseInt(chunks[1])===0
             }
         })
+    }
+
+    saleResponse(payload) {
+        let chunks = payload.split("|")
+        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+
+        let response = {
+            functionCode: parseInt(chunks[0]),
+            responseCode: parseInt(chunks[1]),
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            commerceCode: parseInt(chunks[2]),
+            terminalId: chunks[3],
+            successful: parseInt(chunks[1]) === 0,
+            ticket: chunks[4],
+            authorizationCode: authorizationCode,
+            amount: parseInt(chunks[6]),
+            last4Digits: chunks[7] !== '' ? parseInt(chunks[7]) : null,
+            operationNumber: chunks[8],
+            cardType: chunks[9],
+            accountingDate: chunks[10],
+            accountNumber: chunks[11],
+            cardBrand: chunks[12],
+            realDate: chunks[13],
+            realTime: chunks[14],
+            voucher: chunks[15]?.match(/.{1,40}/g),
+            shareType: chunks[16],
+            sharesNumber: chunks[17],
+            sharesAmount: chunks[18],
+            sharesTypeComment: chunks[19]
+        };
+        return response;
     }
 
 }
