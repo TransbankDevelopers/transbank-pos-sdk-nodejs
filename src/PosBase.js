@@ -276,39 +276,33 @@ module.exports = class POSBase extends EventEmitter {
                 reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`))
             }, this.posTimeout)
 
-            const responseListener = (data) => {
-                if (this.itsAnACK(data)) {
-                    if (typeof this.ackCallback === "function") {
-                        this.ackCallback(data);
-                    }
-                    return;
+            // Wait for the response and fullfill the Promise
+            this.responseCallback = (data) => {
+                clearTimeout(responseTimeout)
+                let response = data
+                if (this.responseAsString) {
+                    response = data.toString().slice(1, -2)
                 }
-
-                let responseString = data.toString().slice(1, -2);
-                let functionCode = data.toString().slice(1, 5);
-
-                this.port.write(Buffer.from([ACK]));
-                this.debug(`OUT --> ${this.bufferToPrintableString([ACK])}`);
-
-                if (functionCode === "0900" || functionCode === "0261") {
-                    if (typeof callback === "function"){
-                        if (functionCode === "0900") {
-                            callback(this.intermediateResponse(responseString), data);
-                        } else { 
-                            callback(responseString, data);
-                        }
-                    }
-                    return;
-                }
-
-                clearTimeout(responseTimeout);
-                this.waiting = false;
-                this.parser.off("data", responseListener);
+                let functionCode = data.toString().slice(1, 5)
                 
-                resolve(responseString, data);
-            };
+                if (functionCode === "0900") { // Sale status messages
+                    if (typeof callback === "function"){
+                        callback(this.intermediateResponse(response), data)
+                    }
+                    return
+                }
+                if (functionCode === "0261") {
+                    if (typeof callback === "function"){
+                        callback(response, data)
+                    }
+                    return
+                }
 
-            this.parser.on("data", responseListener);
+                this.waiting = false
+
+                resolve(response, data)
+            }
+
         })
     }
 
