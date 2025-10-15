@@ -58,28 +58,6 @@ module.exports = class POSIntegrado extends POSBase {
         return (value === true || value === 'true') ? "1" : "0";
     }
 
-    getCommandParameters(amount, ticket, commerceCode, sendStatus, sendVoucher) {
-        const isMulticodeSale = commerceCode !== null && commerceCode !== '0';
-        const commandCode = isMulticodeSale 
-            ? FUNCTION_CODE_MULTICODE_SALE_REQUEST 
-            : FUNCTION_CODE_SALE_REQUEST;
-        
-        return {
-            commandCode: this.formatNumericString(commandCode, 4),
-            amountStr: this.formatNumericString(amount, 9),
-            ticketStr: this.formatNumericString(ticket, 6),
-            statusStr: this.getBooleanFlag(sendStatus),
-            voucherStr: this.getBooleanFlag(sendVoucher),
-            commerceCodeStr: this.formatNumericString(commerceCode ?? '0', 12)
-        };
-    }
-
-
-
-    buildMulticodeSaleCommand(params) {
-        return `${params.commandCode}|${params.amountStr}|${params.ticketStr}||${params.voucherStr}|${params.statusStr}|${params.commerceCodeStr}`;
-    }
-
     salesDetail(printOnPos = false) {
         return new Promise((resolve, reject) => {
 
@@ -196,44 +174,75 @@ module.exports = class POSIntegrado extends POSBase {
 
     saleResponse(payload) {
         let chunks = payload.split("|")
-            let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-            let response = {
-                functionCode: parseInt(chunks[0]),
-                responseCode: parseInt(chunks[1]),
-                commerceCode: parseInt(chunks[2]),
-                terminalId: chunks[3],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0,
-                ticket: chunks[4],
-                authorizationCode: authorizationCode,
-                amount: parseInt(chunks[6]),
-                sharesNumber: chunks[7],
-                sharesAmount: chunks[8],
-                last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
-                operationNumber: chunks[10],
-                cardType: chunks[11],
-                accountingDate: chunks[12],
-                accountNumber: chunks[13],
-                cardBrand: chunks[14],
-                realDate: chunks[15],
-                realTime: chunks[16],
-                employeeId: chunks[17],
-                tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
-                commerceCodeSent: null,
-                voucher: null
-            };
+        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        let response = {
+            functionCode: parseInt(chunks[0]),
+            responseCode: parseInt(chunks[1]),
+            commerceCode: parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            successful: parseInt(chunks[1])===0,
+            ticket: chunks[4],
+            authorizationCode: authorizationCode,
+            amount: parseInt(chunks[6]),
+            sharesNumber: chunks[7],
+            sharesAmount: chunks[8],
+            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
+            operationNumber: chunks[10],
+            cardType: chunks[11],
+            accountingDate: chunks[12],
+            accountNumber: chunks[13],
+            cardBrand: chunks[14],
+            realDate: chunks[15],
+            realTime: chunks[16],
+            employeeId: chunks[17],
+            tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
+            commerceCodeSent: null,
+            voucher: null
+        };
 
-            const functionCodeStr = response.functionCode.toString(); 
-
-            if (functionCodeStr !== FUNCTION_CODE_MULTICODE_SALE && chunks[19] && chunks[19].length > 1) {
-                response.voucher = chunks[19]?.match(/.{1,40}/g)
-            }
-            
-            if (functionCodeStr === FUNCTION_CODE_MULTICODE_SALE) {
-                response.providerCommerceCode = chunks[21] || null;
-                response.commerceCodeSent = chunks[21] || null;
-            }
+        if (chunks[19] && chunks[19].length > 1) {
+            response.voucher = chunks[19]?.match(/.{1,40}/g)
+        }
         
+        return response;
+    }
+
+    multicodeSaleResponse(payload) {
+        let chunks = payload.split("|")
+        let authorizationCode = typeof chunks[5] !== 'undefined'
+            ? chunks[5].trim()
+            : null;
+        let response = {
+            functionCode: Number.parseInt(chunks[0]),
+            responseCode: Number.parseInt(chunks[1]),
+            commerceCode: Number.parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(Number.parseInt(chunks[1])),
+            successful: Number.parseInt(chunks[1])===0,
+            ticket: chunks[4],
+            authorizationCode: authorizationCode,
+            amount: Number.parseInt(chunks[6]),
+            sharesNumber: chunks[7],
+            sharesAmount: chunks[8],
+            last4Digits: chunks[9] !== '' ? Number.parseInt(chunks[9]) : null,
+            operationNumber: chunks[10],
+            cardType: chunks[11],
+            accountingDate: chunks[12],
+            accountNumber: chunks[13],
+            cardBrand: chunks[14],
+            realDate: chunks[15],
+            realTime: chunks[16],
+            employeeId: chunks[17],
+            tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
+            voucher: null,
+            commerceProviderCode: chunks[21] || null
+        };
+
+        if(chunks[19] && chunks[19].length > 1) {
+            response.voucher = chunks[19]?.match(/.{1,40}/g)
+        }
+
         return response;
     }
 
