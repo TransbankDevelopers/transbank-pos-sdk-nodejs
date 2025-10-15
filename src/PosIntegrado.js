@@ -133,7 +133,7 @@ module.exports = class POSIntegrado extends POSBase {
         const ticketStr = this.formatNumericString(ticket, 6);
         const statusStr = this.getBooleanFlag(sendStatus);
         const voucherStr = this.getBooleanFlag(sendVoucher);
-        const commerceCodeStr = commerceCode ? commerceCode.toString() : '';
+        const commerceCodeStr = this.formatNumericString(commerceCode || '0', 12);
 
         const command = `${FUNCTION_CODE_MULTICODE_SALE_REQUEST}|${amountStr}|${ticketStr}||${voucherStr}|${statusStr}|${commerceCodeStr}`;
 
@@ -239,7 +239,7 @@ module.exports = class POSIntegrado extends POSBase {
             employeeId: chunks[17],
             tip: chunks[18] === '' ? null : Number.parseInt(chunks[18]),
             voucher: null,
-            commerceProviderCode: chunks[21] || null
+            providerCommerceCode: chunks[21] || null
         };
 
         if(chunks[19] && chunks[19].length > 1) {
