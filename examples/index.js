@@ -264,37 +264,37 @@ const multicodeSaleOperation = async function() {
     const amount = await input({
         message: 'Ingrese el monto de la venta:',
         default: '1000'
-    });
+    })
 
     const ticket = await input({
         message: 'Ingrese el ticket de la venta:',
         default: 'MULTI123'
-    });
+    })
 
     const commerceCode = await input({
-        message: 'Ingrese el código de comercio (dejar en 0 si no aplica):',
-        default: '0'
-    });
+        message: 'Ingrese el código de comercio del proveedor:',
+        default: '597029414308'
+    })
 
     const intermediateMessages = await select({
-        message: 'Recibir mensajes intermedios?',
-        choices: [
-            {
-                name: 'Si',
-                value: true,
-                description: 'Se recibirán mensaje intermedios durante la venta.'
-            },
-            {
-                name: 'No',
-                value: false,
-                description: 'Solo se recibe la respuesta de la venta.'
-            }
+    message: 'Recibir mensajes intermedios?',
+    choices: [
+        {
+            name: 'Si',
+            value: true,
+            description: 'Se recibirán mensajes intermedios durante la venta.'
+        },
+        {
+            name: 'No',
+            value: false,
+            description: 'Solo se recibe la respuesta de la venta.'
+        }
         ]
     });
 
     await pos.multicodeSale(amount, ticket, commerceCode, intermediateMessages, false, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
-        console.log('Respuesta de la venta multicódigo:', response)
+        console.log('Respuesta de la venta multicódigo:', response);
     })
     .catch(error => {
         console.log('Error en la venta multicódigo:', error)
