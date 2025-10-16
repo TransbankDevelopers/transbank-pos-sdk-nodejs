@@ -5,10 +5,18 @@ const CLOSE_APP = 0
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
 
-const pos = new Transbank.POSIntegrado()
-pos.setDebug(true)
+let pos;
 
 const main = async function() {
+    const posType = await showPosTypeMenu();
+
+    if (posType === 'integrado') {
+        pos = new Transbank.POSIntegrado();
+    } else {
+        pos = new Transbank.POSAutoservicio();
+    }
+    pos.setDebug(true);
+
     let exit = false
     let isConnected = false
 
@@ -39,12 +47,30 @@ const main = async function() {
     }
 }
 
+const showPosTypeMenu = async function() {
+    const answer = await select({
+        message: 'Seleccione el tipo de POS a utilizar:',
+        choices: [
+            {
+                name: 'POS Integrado',
+                value: 'integrado',
+            },
+            {
+                name: 'POS Autoservicio',
+                value: 'autoservicio',
+            }
+        ]
+    });
+    return answer;
+}
+
 const showMenu = async function() {
     const answer = await rawlist({
         message: 'Seleccione una opción:',
         choices: [
             {name: 'Carga de llaves', value: 'loadKey'},
             {name: 'Realizar una venta', value: 'sale'},
+            {name: 'Realizar una venta multicódigo', value: 'multicodeSale'},
             {name: 'Realizar una devolución', value: 'refund'},
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
@@ -93,6 +119,10 @@ const executeOption = async function(option) {
             
         case 'sale':
             await saleOperation()
+            break;
+        
+        case 'multicodeSale':
+            await multicodeSaleOperation()
             break;
 
         case 'refund':
@@ -228,6 +258,47 @@ const saleOperation = async function() {
         console.log('Error en la venta:', error)
     });
 
+}
+
+const multicodeSaleOperation = async function() {
+    const amount = await input({
+        message: 'Ingrese el monto de la venta:',
+        default: '1000'
+    });
+
+    const ticket = await input({
+        message: 'Ingrese el ticket de la venta:',
+        default: 'MULTI123'
+    });
+
+    const commerceCode = await input({
+        message: 'Ingrese el código de comercio (dejar en 0 si no aplica):',
+        default: '0'
+    });
+
+    const intermediateMessages = await select({
+        message: 'Recibir mensajes intermedios?',
+        choices: [
+            {
+                name: 'Si',
+                value: true,
+                description: 'Se recibirán mensaje intermedios durante la venta.'
+            },
+            {
+                name: 'No',
+                value: false,
+                description: 'Solo se recibe la respuesta de la venta.'
+            }
+        ]
+    });
+
+    await pos.multicodeSale(amount, ticket, commerceCode, intermediateMessages, false, (intermediateResponse) => console.log(intermediateResponse))
+    .then(response => {
+        console.log('Respuesta de la venta multicódigo:', response)
+    })
+    .catch(error => {
+        console.log('Error en la venta multicódigo:', error)
+    });
 }
 
 const refundOperation = async function() {
