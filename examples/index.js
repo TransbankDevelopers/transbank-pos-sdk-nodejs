@@ -245,7 +245,7 @@ const multicodeSaleOperation = async function() {
 
     const ticket = await input({
         message: 'Ingrese el ticket de la venta:',
-        default: 'MULTI123'
+        default: 'MC1234'
     });
 
     const commerceCode = await input({
