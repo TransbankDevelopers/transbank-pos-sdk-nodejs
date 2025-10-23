@@ -109,18 +109,13 @@ module.exports = class POSIntegrado extends POSBase {
 
     buildSaleCommand(functionCode, amount, ticket, sendStatus, sendVoucher, commerceCode = null) {
         const statusStr = this.getBooleanFlag(sendStatus);
+        const voucherStr = this.getBooleanFlag(sendVoucher);
+
+        let command = `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}`;
 
         if (functionCode === FUNCTION_CODE_MULTICODE_SALE_REQUEST) {
             const code = commerceCode && commerceCode !== '0' ? commerceCode : '';
-            const voucherStr = this.getBooleanFlag(sendVoucher);
-            return `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}|${code}|`;
-        }
-        
-        const voucherStr = this.getBooleanFlag(sendVoucher);
-        let command = `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}`;
-        
-        if (commerceCode !== null) {
-            command += `|${commerceCode}`;
+            command += `|${code}|`;
         }
         
         return command;
