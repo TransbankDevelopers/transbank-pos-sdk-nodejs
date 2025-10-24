@@ -141,7 +141,7 @@ module.exports = class POSAutoservicio extends POSBase {
             ticket: chunks[4],
             authorizationCode: authorizationCode,
             amount: Number.parseInt(chunks[6]),
-            last4Digits: chunks[7] !== '' ? Number.parseInt(chunks[7]) : null,
+            last4Digits: chunks[7] ? Number.parseInt(chunks[7]) : null,
             operationNumber: chunks[8],
             cardType: chunks[9],
             accountingDate: chunks[10],
