@@ -27,7 +27,7 @@ module.exports = class POSAutoservicio extends POSBase {
         const voucherStr = this.getBooleanFlag(sendVoucher);
 
         if (functionCode === FUNCTION_CODE_MULTICODE_SALE_REQUEST) {
-            const code = commerceCode ? commerceCode : '0';
+            const code = commerceCode || '0';
             return `${functionCode}|${formattedAmount}|${formattedTicket}|${voucherStr}|${statusStr}|${code}`;
         }
         
@@ -63,7 +63,7 @@ module.exports = class POSAutoservicio extends POSBase {
         return this.send(`1200`).then((data) => {
             let chunks = data.split("|")
             return {
-                functionCode: Number.parseInt(chunks[0].replace(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
                 responseCode: Number.parseInt(chunks[1]),
                 commerceCode: Number.parseInt(chunks[2]),
                 terminalId: chunks[3],
@@ -122,17 +122,17 @@ module.exports = class POSAutoservicio extends POSBase {
 
         if (!successful) {
             return {
-                functionCode: Number.parseInt(chunks[0].replace(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
                 successful: successful,
             };
         }
 
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        let authorizationCode = chunks[5] === undefined ? null : chunks[5].trim();
 
         let response = {
-            functionCode: Number.parseInt(chunks[0].replace(/\D+/g, '')),
+            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
             commerceCode: Number.parseInt(chunks[2]),
@@ -165,16 +165,16 @@ module.exports = class POSAutoservicio extends POSBase {
 
         if (!successful) {
             return {
-                functionCode: Number.parseInt(chunks[0].replace(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
                 successful: successful,
             };
         }
-        const authorizationCode = chunks[5]?.trim() ?? null;
+        let authorizationCode = chunks[5] === undefined ? null : chunks[5].trim();
 
         return {
-            functionCode: Number.parseInt(chunks[0].replace(/\D+/g, '')),
+            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
             successful: successful,
