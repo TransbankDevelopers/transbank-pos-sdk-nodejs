@@ -268,7 +268,7 @@ const multicodeSaleOperation = async function() {
 
     const ticket = await input({
         message: 'Ingrese el ticket de la venta:',
-        default: 'MULTI123'
+        default: 'ABC123'
     })
 
     const commerceCode = await input({
@@ -276,8 +276,22 @@ const multicodeSaleOperation = async function() {
         default: '597029414308'
     })
 
+    const sendVoucher = await select({
+        message: '¿Devolver voucher formateado? (Campo Impresión)',
+        choices: [
+            {
+                name: 'Si',
+                value: true,
+            },
+            {
+                name: 'No',
+                value: false,
+            }
+        ]
+    });
+
     const intermediateMessages = await select({
-    message: 'Recibir mensajes intermedios?',
+    message: 'Recibir mensajes intermedios? (Enviar Mensajes)',
     choices: [
         {
             name: 'Si',
@@ -292,7 +306,7 @@ const multicodeSaleOperation = async function() {
         ]
     });
 
-    await pos.multicodeSale(amount, ticket, commerceCode, intermediateMessages, false, (intermediateResponse) => console.log(intermediateResponse))
+    await pos.multicodeSale(amount, ticket, commerceCode, sendVoucher, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
         console.log('Respuesta de la venta multicódigo:', response);
     })
