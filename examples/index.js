@@ -1,7 +1,6 @@
 const { rawlist, input, select } = require('@inquirer/prompts')
 const Transbank = require('../index')
 
-const CLOSE_APP = 0
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
 
@@ -27,10 +26,6 @@ const main = async function() {
         if(connectionOperationResult == PORT_OPEN) {
             isConnected = true
         }
-        
-        if(connectionOperationResult == CLOSE_APP) {
-            exit = true
-        }
 
         while(!exit && isConnected) {
             let option = await showMenu()
@@ -38,10 +33,6 @@ const main = async function() {
 
             if(operationResult == CLOSE_PORT) {
                 isConnected = false
-            }
-
-            if(operationResult == CLOSE_APP) {
-                exit = true
             }
         }
     }
@@ -125,6 +116,10 @@ const executeOption = async function(option) {
             await multicodeSaleOperation()
             break;
 
+        case 'multicodeSale':
+            await multicodeSaleOperation()
+            break;
+
         case 'refund':
             await refundOperation()
             break;
@@ -159,7 +154,9 @@ const executeOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            return CLOSE_APP;
+            pos.disconnect();
+            process.exit(0);
+            break;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -199,7 +196,9 @@ const executeConnectionOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            return CLOSE_APP;
+            pos.disconnect();
+            process.exit(0);
+            break;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -235,29 +234,92 @@ const saleOperation = async function() {
     })
 
     const intermediateMessages = await select({
-    message: 'Recibir mensajes intermedios?',
+    message: '¿Desea recibir mensajes intermedios?',
     choices: [
-        {
-            name: 'Si',
-            value: true,
-            description: 'Se recibirán mensajes intermedios durante la venta.'
-        },
-        {
-            name: 'No',
-            value: false,
-            description: 'Solo se recibe la respuesta de la venta.'
-        }
+            { name: 'Si', value: true },
+            { name: 'No', value: false }
         ]
     });
 
-    await pos.sale(amount, ticket, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
+    const printVoucher = await select({
+        message: '¿Desea el voucher en la respuesta JSON?',
+        choices: [
+            {
+                name: 'Si',
+                value: true,
+                description: 'Se imprimirá el voucher en la respuesta' 
+            },
+            {
+                name: 'No',
+                value: false,
+                description: 'El POS imprimirá el voucher'
+            }
+        ]
+    });
+
+    await pos.sale(amount, ticket, intermediateMessages, printVoucher, (intermediateResponse) => console.log(intermediateResponse))
     .then(response => {
         console.log('Respuesta de la venta:', response);
     })
     .catch(error => {
         console.log('Error en la venta:', error)
     });
+}
 
+const multicodeSaleOperation = async function() {
+    const saleAmount = await input({
+        message: 'Ingrese el monto de la venta:',
+        default: '1000'
+    });
+
+    const ticket = await input({
+        message: 'Ingrese el ticket de la venta:',
+        default: 'MC1234'
+    });
+
+    const commerceCode = await input({
+        message: 'Ingrese el código de comercio (dejar en 0 si no aplica):',
+        default: '0'
+    });
+
+    const intermediateMessages = await select({
+        message: 'Recibir mensajes intermedios?',
+        choices: [
+            { name: 'Si', value: true },
+            { name: 'No', value: false }
+        ]
+    });
+    
+    const printVoucher = await select({
+        message: '¿Desea el voucher en la respuesta JSON?',
+        choices: [
+            {
+                name: 'Si',
+                value: true,
+                description: 'Se imprimirá el voucher en la respuesta' 
+            },
+            {
+                name: 'No',
+                value: false,
+                description: 'El POS imprimirá el voucher'
+            }
+        ]
+    });
+
+    await pos.multicodeSale(
+        saleAmount, 
+        ticket, 
+        commerceCode, 
+        intermediateMessages, 
+        printVoucher, 
+        (intermediateResponse) => console.log(intermediateResponse)
+    )
+    .then(response => {
+        console.log('Respuesta de la venta multicódigo:', response);
+    })
+    .catch(error => {
+        console.log('Error en la venta multicódigo:', error)
+    });
 }
 
 const multicodeSaleOperation = async function() {
@@ -316,7 +378,7 @@ const multicodeSaleOperation = async function() {
 }
 
 const refundOperation = async function() {
-    const operationId = await editor({
+    const operationId = await input({
         message: 'Ingresa el número de operación'
     })
 

@@ -1,7 +1,18 @@
 const POSBase = require('./PosBase')
-const FUNCTION_CODE_MULTICODE_SALE = '0271';
+const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
+const FUNCTION_CODE_SALE_REQUEST = '0200';
 
 module.exports = class POSIntegrado extends POSBase {
+
+    /*
+     |--------------------------------------------------------------------------
+     | Auxiliary Methods
+     |--------------------------------------------------------------------------
+     */
+
+    getBooleanFlag(value) {
+        return value ? "1" : "0";
+    }
 
     /*
      |--------------------------------------------------------------------------
@@ -11,16 +22,8 @@ module.exports = class POSIntegrado extends POSBase {
 
     closeDay() {
         return this.send("0500||").then((data) => {
-            let chunks = data.split("|")
-            return {
-                functionCode: parseInt(chunks[0]),
-                responseCode: parseInt(chunks[1]),
-                commerceCode: parseInt(chunks[2]),
-                terminalId: chunks[3],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0
-            }
-        })
+            return this.getBaseResponse(data.split("|"));
+        });
     }
 
     getLastSale() {
@@ -36,16 +39,14 @@ module.exports = class POSIntegrado extends POSBase {
 
     getTotals() {
         return this.send("0700||").then((data) => {
-            let chunks = data.split("|")
+            const chunks = data.split("|");
+            const baseResponse = this.getBaseResponse(chunks);
             return {
-                functionCode: parseInt(chunks[0]),
-                responseCode: parseInt(chunks[1]),
-                txCount: parseInt(chunks[2]),
-                txTotal: parseInt(chunks[3]),
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0
-            }
-        })
+                ...baseResponse,
+                txCount: Number.parseInt(chunks[2]),
+                txTotal: Number.parseInt(chunks[3])
+            };
+        });
     }
 
     salesDetail(printOnPos = false) {
@@ -59,7 +60,7 @@ module.exports = class POSIntegrado extends POSBase {
                 printOnPos = (printOnPos === 'true' || printOnPos === '1')
             }
 
-            let print = printOnPos ? "0":"1"
+            let print = this.getBooleanFlag(!printOnPos);
             let sales = []
 
             let promise = this.send(`0260|${print}|`, !printOnPos, onEverySale.bind(this))
@@ -106,25 +107,32 @@ module.exports = class POSIntegrado extends POSBase {
         return this.send("0300", false)
     }
 
-    sale(amount, ticket, sendStatus = false, callback = null) {
-        amount = amount.toString().padStart(9, "0").slice(0, 9)
-        ticket = ticket.toString().padStart(6, "0").slice(0, 6)
-        let status = sendStatus ? "1":"0"
+    buildSaleCommand(functionCode, amount, ticket, sendStatus, sendVoucher, commerceCode = null) {
+        const statusStr = this.getBooleanFlag(sendStatus);
+        const voucherStr = this.getBooleanFlag(sendVoucher);
 
-        return this.send(`0200|${amount}|${ticket}|||${status}`, true, callback).then((data) => {
-            return this.saleResponse(data)
-        })
+        let command = `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}`;
+
+        if (functionCode === FUNCTION_CODE_MULTICODE_SALE_REQUEST) {
+            const code = commerceCode && commerceCode !== '0' ? commerceCode : '';
+            command += `|${code}|`;
+        }
+        
+        return command;
     }
 
-    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, callback = null) {
-        amount = amount.toString().padStart(9, "0").slice(0, 9)
-        ticket = ticket.toString().padStart(6, "0").slice(0, 6)
-        commerceCode = commerceCode === null ? '0' : commerceCode;
-        let status = sendStatus ? "1":"0"
+    sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
+        const command = this.buildSaleCommand(FUNCTION_CODE_SALE_REQUEST, amount, ticket, sendStatus, sendVoucher);
+        return this.send(command, true, callback).then((data) => {
+            return this.saleResponse(data);
+        });
+    }
 
-        return this.send(`0270|${amount}|${ticket}|||${status}|${commerceCode}`, true, callback).then((data) => {
-            return this.saleResponse(data)
-        })
+    multicodeSale(amount, ticket, commerceCode = null, sendStatus = false, sendVoucher = false, callback = null) {
+        const command = this.buildSaleCommand(FUNCTION_CODE_MULTICODE_SALE_REQUEST, amount, ticket, sendStatus, sendVoucher, commerceCode);
+        return this.send(command, true, callback).then((data) => {
+            return this.multicodeSaleResponse(data);
+        });
     }
 
     /*
@@ -133,7 +141,7 @@ module.exports = class POSIntegrado extends POSBase {
      |--------------------------------------------------------------------------
      */
 
-    saleDetailResponse(payload) {
+     saleDetailResponse(payload) {
         let chunks = payload.split("|")
         let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         return {
@@ -162,9 +170,9 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     saleResponse(payload) {
-        let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
-        let response = {
+        const chunks = payload.split("|");
+        const authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        const response = {
             functionCode: parseInt(chunks[0]),
             responseCode: parseInt(chunks[1]),
             commerceCode: parseInt(chunks[2]),
@@ -185,12 +193,52 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null
-        };
-        if (chunks[0] === FUNCTION_CODE_MULTICODE_SALE) {
-            response.change = chunks[20];
-            response.commerceCode = chunks[21];
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            voucher: null
         }
+        
+        if (chunks[19] && chunks[19].length > 1) {
+            response.voucher = chunks[19]?.match(/.{1,40}/g);
+        }
+
         return response;
     }
+
+    multicodeSaleResponse(payload) {
+        const chunks = payload.split("|");
+        const authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        const response = {
+            functionCode: parseInt(chunks[0]),
+            responseCode: parseInt(chunks[1]),
+            commerceCode: parseInt(chunks[2]),
+            terminalId: chunks[3],
+            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+            successful: parseInt(chunks[1])===0,
+            ticket: chunks[4],
+            authorizationCode: authorizationCode,
+            amount: parseInt(chunks[6]),
+            sharesNumber: chunks[7],
+            sharesAmount: chunks[8],
+            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
+            operationNumber: chunks[10],
+            cardType: chunks[11],
+            accountingDate: chunks[12],
+            accountNumber: chunks[13],
+            cardBrand: chunks[14],
+            realDate: chunks[15],
+            realTime: chunks[16],
+            employeeId: chunks[17],
+            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            voucher: null,
+            change: chunks[20],
+            commerceCode: chunks[21]
+        }
+
+        if (chunks[19] && chunks[19].length > 1) {
+            response.voucher = chunks[19]?.match(/.{1,40}/g);
+        }
+
+        return response
+    }
+
 }
