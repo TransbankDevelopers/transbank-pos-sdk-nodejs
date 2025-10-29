@@ -36,7 +36,7 @@ const showMenu = async function() {
         choices: [
             {name: 'Carga de llaves', value: 'loadKey'},
             {name: 'Realizar una venta', value: 'sale'},
-            {name: 'Realizar una venta Multicódigo', value: 'multicodeSale'},
+            {name: 'Realizar una venta multicódigo', value: 'multicodeSale'},
             {name: 'Realizar una devolución', value: 'refund'},
             {name: 'Ver detalle de ventas', value: 'salesDetail'},
             {name: 'Cerrar sesión POS', value: 'close'},
@@ -205,7 +205,7 @@ const saleOperation = async function() {
     })
 
     const intermediateMessages = await select({
-    message: 'Recibir mensajes intermedios?',
+    message: '¿Desea recibir mensajes intermedios?',
     choices: [
             { name: 'Si', value: true },
             { name: 'No', value: false }
