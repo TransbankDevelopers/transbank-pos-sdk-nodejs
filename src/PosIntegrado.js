@@ -60,23 +60,52 @@ module.exports = class POSIntegrado extends POSBase {
                 printOnPos = (printOnPos === 'true' || printOnPos === '1')
             }
 
-            let print = this.getBooleanFlag(!printOnPos);
-            let sales = []
-
-            let promise = this.send(`0260|${print}|`, !printOnPos, onEverySale.bind(this))
             if (printOnPos) {
-                resolve(promise)
+                this.send(`0260|0|`, false)
+                    .then(() => resolve(true))
+                    .catch(reject);
+                return;
             }
 
-            function onEverySale(sale) {
+            let sales = [];
+            let consecutiveEmptyAuthCodes = 0;
+            const command = `0260|1|`;
 
-                let detail = this.saleDetailResponse(sale.toString().slice(1, -2))
-                if (detail.authorizationCode=== "" || detail.authorizationCode === null) {
-                    resolve(sales)
-                    return
+            const processDetailResponse = (responsePayload, rawData) => {
+                const functionCode = rawData.toString.slice(1, 5);
+
+                if (functionCode !== '0261') {
+                    this.debug("Received unexpected function code during salesDetail:", functionCode, responsePayload);
+                    return false;
                 }
-                sales.push(detail)
+
+                let detail = this.saleDetailResponse(responsePayload);
+
+                if (detail.authorizationCode === "" || detail.authorizationCode === null) {
+                    consecutiveEmptyAuthCodes++;
+                    this.debug(`SalesDetail: Received empty auth code. Count: ${consecutiveEmptyAuthCodes}`);
+                } else {
+                    consecutiveEmptyAuthCodes = 0; 
+                    sales.push(detail); 
+                    this.debug(`SalesDetail: Received sale with AuthCode ${detail.authorizationCode}. Count reset.`);
+                }
+
+                if (consecutiveEmptyAuthCodes >= 2) {
+                    this.debug("SalesDetail: End condition met (2 consecutive empty auth codes). Resolving.");
+                    return true;
+                }
+
+                return false;
             }
+
+            this.send(command, true, processDetailResponse)
+                .then(() => {
+                    resolve(sales);
+                })
+                .catch(error => {
+                    this.debug("SalesDetail: Error during send/receive.", error);
+                    reject(error);
+                });
 
         })
 
