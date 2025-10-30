@@ -267,62 +267,6 @@ const saleOperation = async function() {
 }
 
 const multicodeSaleOperation = async function() {
-    const saleAmount = await input({
-        message: 'Ingrese el monto de la venta:',
-        default: '1000'
-    });
-
-    const ticket = await input({
-        message: 'Ingrese el ticket de la venta:',
-        default: 'MC1234'
-    });
-
-    const commerceCode = await input({
-        message: 'Ingrese el código de comercio (dejar en 0 si no aplica):',
-        default: '0'
-    });
-
-    const intermediateMessages = await select({
-        message: 'Recibir mensajes intermedios?',
-        choices: [
-            { name: 'Si', value: true },
-            { name: 'No', value: false }
-        ]
-    });
-    
-    const printVoucher = await select({
-        message: '¿Desea el voucher en la respuesta JSON?',
-        choices: [
-            {
-                name: 'Si',
-                value: true,
-                description: 'Se imprimirá el voucher en la respuesta' 
-            },
-            {
-                name: 'No',
-                value: false,
-                description: 'El POS imprimirá el voucher'
-            }
-        ]
-    });
-
-    await pos.multicodeSale(
-        saleAmount, 
-        ticket, 
-        commerceCode, 
-        intermediateMessages, 
-        printVoucher, 
-        (intermediateResponse) => console.log(intermediateResponse)
-    )
-    .then(response => {
-        console.log('Respuesta de la venta multicódigo:', response);
-    })
-    .catch(error => {
-        console.log('Error en la venta multicódigo:', error)
-    });
-}
-
-const multicodeSaleOperation = async function() {
     const amount = await input({
         message: 'Ingrese el monto de la venta:',
         default: '1000'
