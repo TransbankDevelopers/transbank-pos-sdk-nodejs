@@ -60,43 +60,38 @@ module.exports = class POSIntegrado extends POSBase {
                 printOnPos = (printOnPos === 'true' || printOnPos === '1')
             }
 
+            let print = printOnPos ? "0":"1"
+
             if (printOnPos) {
-                this.send(`0260|0|`, false)
-                    .then(() => resolve(true))
-                    .catch(reject);
-                return;
+                    this.send(`0260|${print}|`, false)
+                        .then(() => resolve(true))
+                        .catch(reject);
+                    return;
             }
 
             let sales = [];
             let consecutiveEmptyAuthCodes = 0;
-            const command = `0260|1|`;
+            const command = `0260|${print}|`;
 
             const processDetailResponse = (responsePayload, rawData) => {
-                const functionCode = rawData.toString.slice(1, 5);
-
-                if (functionCode !== '0261') {
-                    this.debug("Received unexpected function code during salesDetail:", functionCode, responsePayload);
-                    return false;
-                }
-
                 let detail = this.saleDetailResponse(responsePayload);
 
                 if (detail.authorizationCode === "" || detail.authorizationCode === null) {
                     consecutiveEmptyAuthCodes++;
                     this.debug(`SalesDetail: Received empty auth code. Count: ${consecutiveEmptyAuthCodes}`);
                 } else {
-                    consecutiveEmptyAuthCodes = 0; 
-                    sales.push(detail); 
-                    this.debug(`SalesDetail: Received sale with AuthCode ${detail.authorizationCode}. Count reset.`);
+                    consecutiveEmptyAuthCodes = 0;
+                    sales.push(detail);
+                    this.debug(`SalesDetail: Received sale with AuthCode ${detail.authorizationCode}.`);
                 }
 
                 if (consecutiveEmptyAuthCodes >= 2) {
-                    this.debug("SalesDetail: End condition met (2 consecutive empty auth codes). Resolving.");
+                    this.debug("SalesDetail: End condition met (2 consecutive empty). Returning TRUE.");
                     return true;
                 }
 
                 return false;
-            }
+            };
 
             this.send(command, true, processDetailResponse)
                 .then(() => {
@@ -106,9 +101,7 @@ module.exports = class POSIntegrado extends POSBase {
                     this.debug("SalesDetail: Error during send/receive.", error);
                     reject(error);
                 });
-
-        })
-
+        });
     }
 
     refund(operationId) {

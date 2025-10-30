@@ -275,46 +275,44 @@ module.exports = class POSBase extends EventEmitter {
                 this.waiting = false
                 reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`))
             }, this.posTimeout)
-
+            
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
                 clearTimeout(responseTimeout)
                 responseTimeout = setTimeout(() => {
-                    this.waiting = false;
+                    this.waiting = false
                     reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds after last message`))
-                }, this.posTimeout);
+                }, this.posTimeout)
 
                 let response = data
                 if (this.responseAsString) {
-                    const isFinished = callback(response, data);
-                    if (isFinished === true) {
-                        clearTimeout(responseTimeout);
-                        this.waiting = false;
-                        resolve(response,data)
-                    }
-                    
-                    return 
+                    response = data.toString().slice(1, -2)
                 }
                 let functionCode = data.toString().slice(1, 5)
-                
+
                 if (functionCode === "0900") { // Sale status messages
                     if (typeof callback === "function"){
                         callback(this.intermediateResponse(response), data)
                     }
                     return
                 }
+
                 if (functionCode === "0261") {
-                    if (typeof callback === "function"){
-                        callback(response, data)
+                    if (typeof callback === "function") {
+                        const isFinished = callback(response, data);
+                        if (isFinished === true) {
+                            clearTimeout(responseTimeout);
+                            this.waiting = false;
+                            resolve(response, data);
+                        }
+                        return; 
                     }
-                    return
                 }
 
+                clearTimeout(responseTimeout)
                 this.waiting = false
-
                 resolve(response, data)
             }
-
         })
     }
 
