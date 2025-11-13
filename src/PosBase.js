@@ -278,13 +278,8 @@ module.exports = class POSBase extends EventEmitter {
             
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
-                clearTimeout(responseTimeout)
-                responseTimeout = setTimeout(() => {
-                    this.waiting = false
-                    reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds after last message`))
-                }, this.posTimeout)
-
                 let response = data
+
                 if (this.responseAsString) {
                     response = data.toString().slice(1, -2)
                 }
@@ -298,6 +293,11 @@ module.exports = class POSBase extends EventEmitter {
                 }
 
                 if (functionCode === "0261") {
+                    clearTimeout(responseTimeout)
+                    responseTimeout = setTimeout(() => {
+                        this.waiting = false
+                        reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds after last message`))
+                    }, this.posTimeout)
                     if (typeof callback === "function") {
                         const isFinished = callback(response, data);
                         if (isFinished) {
