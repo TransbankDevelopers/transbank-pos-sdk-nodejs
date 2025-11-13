@@ -309,9 +309,9 @@ module.exports = class POSBase extends EventEmitter {
                         }
                         return; 
                     }
+                    clearTimeout(responseTimeout)
                 }
 
-                clearTimeout(responseTimeout)
                 this.waiting = false
                 resolve(response, data)
             }
