@@ -1,4 +1,4 @@
-const POSBase = require('./PosBase')
+const POSBase = require('./PosBase');
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
 const FUNCTION_CODE_SALE_REQUEST = '0200';
 
@@ -78,15 +78,12 @@ module.exports = class POSIntegrado extends POSBase {
 
                 if (detail.authorizationCode === "" || detail.authorizationCode === null) {
                     consecutiveEmptyAuthCodes++;
-                    this.debug(`SalesDetail: Received empty auth code. Count: ${consecutiveEmptyAuthCodes}`);
                 } else {
                     consecutiveEmptyAuthCodes = 0;
                     sales.push(detail);
-                    this.debug(`SalesDetail: Received sale with AuthCode ${detail.authorizationCode}.`);
                 }
 
-                if (consecutiveEmptyAuthCodes >= 2) {
-                    this.debug("SalesDetail: End condition met (2 consecutive empty). Returning TRUE.");
+                if (consecutiveEmptyAuthCodes >= 2) {;
                     return true;
                 }
 
@@ -98,7 +95,6 @@ module.exports = class POSIntegrado extends POSBase {
                     resolve(sales);
                 })
                 .catch(error => {
-                    this.debug("SalesDetail: Error during send/receive.", error);
                     reject(error);
                 });
         });
