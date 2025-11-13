@@ -1,6 +1,7 @@
-const POSBase = require('./PosBase')
+const POSBase = require('./PosBase');
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
 const FUNCTION_CODE_SALE_REQUEST = '0200';
+const CONSECUTIVE_EMPTY_AUTHCODE_LIMIT = 2;
 
 module.exports = class POSIntegrado extends POSBase {
 
@@ -60,26 +61,44 @@ module.exports = class POSIntegrado extends POSBase {
                 printOnPos = (printOnPos === 'true' || printOnPos === '1')
             }
 
-            let print = this.getBooleanFlag(!printOnPos);
-            let sales = []
+            let print = printOnPos ? "0":"1"
 
-            let promise = this.send(`0260|${print}|`, !printOnPos, onEverySale.bind(this))
             if (printOnPos) {
-                resolve(promise)
+                    this.send(`0260|${print}|`, false)
+                        .then(() => resolve(true))
+                        .catch(reject);
+                    return;
             }
 
-            function onEverySale(sale) {
+            let sales = [];
+            let consecutiveEmptyAuthCodes = 0;
+            const command = `0260|${print}|`;
 
-                let detail = this.saleDetailResponse(sale.toString().slice(1, -2))
-                if (detail.authorizationCode=== "" || detail.authorizationCode === null) {
-                    resolve(sales)
-                    return
+            const processDetailResponse = (responsePayload, rawData) => {
+                let detail = this.saleDetailResponse(responsePayload);
+
+                if (detail.authorizationCode === "" || detail.authorizationCode === null) {
+                    consecutiveEmptyAuthCodes++;
+                } else {
+                    consecutiveEmptyAuthCodes = 0;
+                    sales.push(detail);
                 }
-                sales.push(detail)
-            }
 
-        })
+                if (consecutiveEmptyAuthCodes >= CONSECUTIVE_EMPTY_AUTHCODE_LIMIT) {;
+                    return true;
+                }
 
+                return false;
+            };
+
+            this.send(command, true, processDetailResponse)
+                .then(() => {
+                    resolve(sales);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
     }
 
     refund(operationId) {

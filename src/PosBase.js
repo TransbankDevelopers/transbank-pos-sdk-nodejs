@@ -4,6 +4,8 @@ const EventEmitter = require('events');
 const { InterByteTimeoutParser } = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
 const ACK = 0x06
+const FUNCTION_CODE_INTERMEDIATE_MESSAGE = "0900";
+const FUNCTION_CODE_SALES_DETAIL_RESPONSE = "0261";
 
 module.exports = class POSBase extends EventEmitter {
 
@@ -275,34 +277,44 @@ module.exports = class POSBase extends EventEmitter {
                 this.waiting = false
                 reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds`))
             }, this.posTimeout)
-
+            
             // Wait for the response and fullfill the Promise
             this.responseCallback = (data) => {
                 clearTimeout(responseTimeout)
                 let response = data
+
                 if (this.responseAsString) {
                     response = data.toString().slice(1, -2)
                 }
                 let functionCode = data.toString().slice(1, 5)
-                
-                if (functionCode === "0900") { // Sale status messages
+
+                if (functionCode === FUNCTION_CODE_INTERMEDIATE_MESSAGE) { 
                     if (typeof callback === "function"){
                         callback(this.intermediateResponse(response), data)
                     }
                     return
                 }
-                if (functionCode === "0261") {
-                    if (typeof callback === "function"){
-                        callback(response, data)
+
+                if (functionCode === FUNCTION_CODE_SALES_DETAIL_RESPONSE) {
+                    responseTimeout = setTimeout(() => {
+                        this.waiting = false
+                        reject(new Error(`Response of POS has not been received in ${this.posTimeout / 1000} seconds after last message`))
+                    }, this.posTimeout)
+                    if (typeof callback === "function") {
+                        const isFinished = callback(response, data);
+                        if (isFinished) {
+                            clearTimeout(responseTimeout);
+                            this.waiting = false;
+                            resolve(response, data);
+                        }
+                        return; 
                     }
-                    return
+                    clearTimeout(responseTimeout)
                 }
 
                 this.waiting = false
-
                 resolve(response, data)
             }
-
         })
     }
 
