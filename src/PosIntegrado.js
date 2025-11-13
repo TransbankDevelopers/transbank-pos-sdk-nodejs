@@ -1,6 +1,7 @@
 const POSBase = require('./PosBase');
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
 const FUNCTION_CODE_SALE_REQUEST = '0200';
+const CONSECUTIVE_EMPTY_AUTHCODE_LIMIT = 2;
 
 module.exports = class POSIntegrado extends POSBase {
 
@@ -83,7 +84,7 @@ module.exports = class POSIntegrado extends POSBase {
                     sales.push(detail);
                 }
 
-                if (consecutiveEmptyAuthCodes >= 2) {;
+                if (consecutiveEmptyAuthCodes >= CONSECUTIVE_EMPTY_AUTHCODE_LIMIT) {;
                     return true;
                 }
 
