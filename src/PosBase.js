@@ -4,6 +4,8 @@ const EventEmitter = require('events');
 const { InterByteTimeoutParser } = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
 const ACK = 0x06
+const FUNCTION_CODE_INTERMEDIATE_MESSAGE = "0900";
+const FUNCTION_CODE_SALES_DETAIL_RESPONSE = "0261";
 
 module.exports = class POSBase extends EventEmitter {
 
@@ -285,14 +287,14 @@ module.exports = class POSBase extends EventEmitter {
                 }
                 let functionCode = data.toString().slice(1, 5)
 
-                if (functionCode === "0900") { // Sale status messages
+                if (functionCode === FUNCTION_CODE_INTERMEDIATE_MESSAGE) { 
                     if (typeof callback === "function"){
                         callback(this.intermediateResponse(response), data)
                     }
                     return
                 }
 
-                if (functionCode === "0261") {
+                if (functionCode === FUNCTION_CODE_SALES_DETAIL_RESPONSE) {
                     clearTimeout(responseTimeout)
                     responseTimeout = setTimeout(() => {
                         this.waiting = false
