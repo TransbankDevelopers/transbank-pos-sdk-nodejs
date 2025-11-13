@@ -300,7 +300,7 @@ module.exports = class POSBase extends EventEmitter {
                 if (functionCode === "0261") {
                     if (typeof callback === "function") {
                         const isFinished = callback(response, data);
-                        if (isFinished === true) {
+                        if (isFinished) {
                             clearTimeout(responseTimeout);
                             this.waiting = false;
                             resolve(response, data);
