@@ -255,6 +255,7 @@ module.exports = class POSBase extends EventEmitter {
             this.ackCallback = () => {
                 clearTimeout(timeout)
                 if (!waitResponse) {
+                    clearTimeout(responseTimeout)
                     this.waiting = false
                     resolve(true)
                 }
