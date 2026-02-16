@@ -23,8 +23,16 @@ module.exports = class POSIntegrado extends POSBase {
 
     closeDay() {
         return this.send("0500||").then((data) => {
-            return this.getBaseResponse(data.split("|"));
-        });
+            let chunks = data.split("|")
+            return {
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                commerceCode: parseInt(chunks[2]),
+                terminalId: chunks[3],
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0
+            }
+        })
     }
 
     getLastSale() {
