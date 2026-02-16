@@ -59,7 +59,10 @@ const showMenu = async function() {
     const answer = await rawlist({
         message: 'Seleccione una opción:',
         choices: [
+            {name: 'Poll', value: 'poll'},
             {name: 'Carga de llaves', value: 'loadKey'},
+            {name: 'Obtener última venta', value: 'getLastSale'},
+            {name: 'Obtener totales', value: 'getTotals'},
             {name: 'Realizar una venta', value: 'sale'},
             {name: 'Realizar una venta multicódigo', value: 'multicodeSale'},
             {name: 'Realizar una devolución', value: 'refund'},
@@ -104,8 +107,34 @@ const showPortMenu = async function(portList) {
 
 const executeOption = async function(option) {
     switch (option) {
+        case 'poll':
+            await pos.poll()
+                .then(response => console.log('Respuesta Poll:', response))
+                .catch(error => console.log('Error al ejecutar poll:', error));
+            break;
+
         case 'loadKey':
             await pos.loadKeys().then(response => console.log('Respuesta Carga de llaves:', response));
+            break;
+
+        case 'getLastSale':
+            if (typeof pos.getLastSale !== 'function') {
+                console.log('Método getLastSale no disponible para este tipo de POS');
+                break;
+            }
+            await pos.getLastSale()
+                .then(response => console.log('Respuesta Última venta:', response))
+                .catch(error => console.log('Error al obtener última venta:', error));
+            break;
+
+        case 'getTotals':
+            if (typeof pos.getTotals !== 'function') {
+                console.log('Método getTotals no disponible para este tipo de POS');
+                break;
+            }
+            await pos.getTotals()
+                .then(response => console.log('Respuesta Totales:', response))
+                .catch(error => console.log('Error al obtener totales:', error));
             break;
             
         case 'sale':
