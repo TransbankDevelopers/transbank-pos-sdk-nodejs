@@ -326,7 +326,7 @@ const refundOperation = async function() {
         message: 'Ingresa el número de operación'
     })
 
-    pos.refund(operationId).then(data => {
+    await pos.refund(operationId).then(data => {
         console.log('Devolución realizada:', data)
     }).catch(error => {
         console.log('Error en la devolución:', error)
