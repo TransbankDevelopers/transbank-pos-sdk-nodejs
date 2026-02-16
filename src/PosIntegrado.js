@@ -48,14 +48,16 @@ module.exports = class POSIntegrado extends POSBase {
 
     getTotals() {
         return this.send("0700||").then((data) => {
-            const chunks = data.split("|");
-            const baseResponse = this.getBaseResponse(chunks);
+            let chunks = data.split("|")
             return {
-                ...baseResponse,
-                txCount: Number.parseInt(chunks[2]),
-                txTotal: Number.parseInt(chunks[3])
-            };
-        });
+                functionCode: parseInt(chunks[0]),
+                responseCode: parseInt(chunks[1]),
+                txCount: parseInt(chunks[2]),
+                txTotal: parseInt(chunks[3]),
+                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
+                successful: parseInt(chunks[1])===0
+            }
+        })
     }
 
     salesDetail(printOnPos = false) {
