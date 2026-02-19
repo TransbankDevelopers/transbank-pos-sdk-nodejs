@@ -38,6 +38,9 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/e2e/jest.setup.js"
+    ],
     "testMatch": [
       "**/tests/**/*.spec.js"
     ],

@@ -1,43 +1,22 @@
-const Transbank = require("../../index");
-
-jest.mock("serialport", () => {
-    const actual = jest.requireActual("serialport");
-    return {
-        ...actual,
-        SerialPort: actual.SerialPortMock
-    };
-});
-
-const { SerialPortMock } = require("serialport");
+const { setupSuiteContext } = require("./helpers/suiteContext");
 const {
-    PORT_PATH,
     ackNextWriteAndMaybeRespond,
-    cleanupPos,
     connectWithPollAck,
     respondWithFrames
 } = require("./helpers/mockPos");
 
 describe("E2E POSIntegrado (mock serial)", () => {
+    const suite = setupSuiteContext();
     let pos = null;
 
-    beforeEach(() => {
-        pos = null;
-        SerialPortMock.binding.reset();
-        SerialPortMock.binding.createPort(PORT_PATH, { echo: false, record: true });
-    });
-
-    afterEach(async () => {
-        await cleanupPos(pos);
-    });
-
     it("conecta y hace poll durante connect", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
         expect(pos.isConnected()).toBe(true);
     });
 
     it("ejecuta loadKeys y parsea la respuesta", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const loadKeysPromise = pos.loadKeys();
@@ -51,7 +30,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("realiza venta y parsea la respuesta", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const responsePayload =
@@ -69,7 +48,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("realiza venta multicodigo y parsea la respuesta", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const responsePayload =
@@ -87,7 +66,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("obtiene totales", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const totalsPromise = pos.getTotals();
@@ -101,7 +80,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("obtiene detalle de ventas hasta dos autorizaciones vacias consecutivas", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const salesDetailPromise = pos.salesDetail(false);
@@ -119,7 +98,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("Realiza el cierre del POS", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const closeDayPromise = pos.closeDay();
@@ -132,7 +111,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("realiza anulación y parsea la respuesta", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const refundPromise = pos.refund("137");
@@ -147,7 +126,7 @@ describe("E2E POSIntegrado (mock serial)", () => {
     });
 
     it("Cambia el POS a modo normal", async () => {
-        pos = new Transbank.POSIntegrado();
+        pos = suite.createIntegrado();
         await connectWithPollAck(pos);
 
         const promise = pos.changeToNormalMode();

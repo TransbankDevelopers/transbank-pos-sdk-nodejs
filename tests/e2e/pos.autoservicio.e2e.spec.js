@@ -1,36 +1,15 @@
-const Transbank = require("../../index");
-
-jest.mock("serialport", () => {
-    const actual = jest.requireActual("serialport");
-    return {
-        ...actual,
-        SerialPort: actual.SerialPortMock
-    };
-});
-
-const { SerialPortMock } = require("serialport");
+const { setupSuiteContext } = require("./helpers/suiteContext");
 const {
-    PORT_PATH,
     ackNextWriteAndMaybeRespond,
-    cleanupPos,
     connectWithPollAck
 } = require("./helpers/mockPos");
 
 describe("E2E POSAutoservicio (mock serial)", () => {
+    const suite = setupSuiteContext();
     let pos = null;
 
-    beforeEach(() => {
-        pos = null;
-        SerialPortMock.binding.reset();
-        SerialPortMock.binding.createPort(PORT_PATH, { echo: false, record: true });
-    });
-
-    afterEach(async () => {
-        await cleanupPos(pos);
-    });
-
     it("realiza venta y parsea respuesta exitosa", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const salePromise = pos.sale(1000, "123");
@@ -47,7 +26,7 @@ describe("E2E POSAutoservicio (mock serial)", () => {
     });
 
     it("realiza venta multicodigo y parsea respuesta exitosa", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const salePromise = pos.multicodeSale(2500, "555", "597020000540");
@@ -65,7 +44,7 @@ describe("E2E POSAutoservicio (mock serial)", () => {
     });
 
     it("obtiene ultima venta", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const lastSalePromise = pos.getLastSale();
@@ -81,7 +60,7 @@ describe("E2E POSAutoservicio (mock serial)", () => {
     });
 
     it("realiza cierre", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const closeDayPromise = pos.closeDay();
@@ -93,7 +72,7 @@ describe("E2E POSAutoservicio (mock serial)", () => {
     });
 
     it("inicializa el pos", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const promise = pos.initialization();
@@ -102,7 +81,7 @@ describe("E2E POSAutoservicio (mock serial)", () => {
     });
 
     it("parsea respuesta de inicializacion", async () => {
-        pos = new Transbank.POSAutoservicio();
+        pos = suite.createAutoservicio();
         await connectWithPollAck(pos);
 
         const promise = pos.initializationResponse();
