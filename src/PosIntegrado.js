@@ -23,8 +23,16 @@ module.exports = class POSIntegrado extends POSBase {
 
     closeDay() {
         return this.send("0500||").then((data) => {
-            return this.getBaseResponse(data.split("|"));
-        });
+            let chunks = data.split("|")
+            return {
+                functionCode: Number.parseInt(chunks[0]),
+                responseCode: Number.parseInt(chunks[1]),
+                commerceCode: Number.parseInt(chunks[2]),
+                terminalId: chunks[3],
+                responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+                successful: Number.parseInt(chunks[1])===0
+            }
+        })
     }
 
     getLastSale() {
@@ -40,14 +48,16 @@ module.exports = class POSIntegrado extends POSBase {
 
     getTotals() {
         return this.send("0700||").then((data) => {
-            const chunks = data.split("|");
-            const baseResponse = this.getBaseResponse(chunks);
+            let chunks = data.split("|")
             return {
-                ...baseResponse,
+                functionCode: Number.parseInt(chunks[0]),
+                responseCode: Number.parseInt(chunks[1]),
                 txCount: Number.parseInt(chunks[2]),
-                txTotal: Number.parseInt(chunks[3])
-            };
-        });
+                txTotal: Number.parseInt(chunks[3]),
+                responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+                successful: Number.parseInt(chunks[1])===0
+            }
+        })
     }
 
     salesDetail(printOnPos = false) {
@@ -110,14 +120,14 @@ module.exports = class POSIntegrado extends POSBase {
         return this.send(`1200|${operationId}|`).then((data) => {
             let chunks = data.split("|")
             return {
-                functionCode: parseInt(chunks[0]),
-                responseCode: parseInt(chunks[1]),
-                commerceCode: parseInt(chunks[2]),
+                functionCode: Number.parseInt(chunks[0]),
+                responseCode: Number.parseInt(chunks[1]),
+                commerceCode: Number.parseInt(chunks[2]),
                 terminalId: chunks[3],
                 authorizationCode: chunks[4].trim(),
                 operationId: chunks[5],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0
+                responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+                successful: Number.parseInt(chunks[1])===0
             }
         })
     }
@@ -164,16 +174,16 @@ module.exports = class POSIntegrado extends POSBase {
         let chunks = payload.split("|")
         let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         return {
-            functionCode: parseInt(chunks[0]),
-            responseCode: parseInt(chunks[1]),
-            commerceCode: parseInt(chunks[2]),
+            functionCode: Number.parseInt(chunks[0]),
+            responseCode: Number.parseInt(chunks[1]),
+            commerceCode: Number.parseInt(chunks[2]),
             terminalId: chunks[3],
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-            successful: parseInt(chunks[1])===0,
+            responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+            successful: Number.parseInt(chunks[1])===0,
             ticket: chunks[4],
             authorizationCode: authorizationCode,
             amount: chunks[6],
-            last4Digits: parseInt(chunks[7]),
+            last4Digits: Number.parseInt(chunks[7]),
             operationNumber: chunks[8],
             cardType: chunks[9],
             accountingDate: chunks[10],
@@ -182,7 +192,7 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[13],
             realTime: chunks[14],
             employeeId: chunks[15],
-            tip: parseInt(chunks[16]),
+            tip: Number.parseInt(chunks[16]),
             feeAmount: (chunks[16]),
             feeNumber: (chunks[17])
         }
@@ -192,18 +202,18 @@ module.exports = class POSIntegrado extends POSBase {
         const chunks = payload.split("|");
         const authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         const response = {
-            functionCode: parseInt(chunks[0]),
-            responseCode: parseInt(chunks[1]),
-            commerceCode: parseInt(chunks[2]),
+            functionCode: Number.parseInt(chunks[0]),
+            responseCode: Number.parseInt(chunks[1]),
+            commerceCode: Number.parseInt(chunks[2]),
             terminalId: chunks[3],
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-            successful: parseInt(chunks[1])===0,
+            responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+            successful: Number.parseInt(chunks[1])===0,
             ticket: chunks[4],
             authorizationCode: authorizationCode,
-            amount: parseInt(chunks[6]),
+            amount: Number.parseInt(chunks[6]),
             sharesNumber: chunks[7],
             sharesAmount: chunks[8],
-            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
+            last4Digits: chunks[9] !== '' ? Number.parseInt(chunks[9]) : null,
             operationNumber: chunks[10],
             cardType: chunks[11],
             accountingDate: chunks[12],
@@ -212,7 +222,7 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            tip: chunks[18] !== '' ? Number.parseInt(chunks[18]) : null,
             voucher: null
         }
         
@@ -227,18 +237,18 @@ module.exports = class POSIntegrado extends POSBase {
         const chunks = payload.split("|");
         const authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
         const response = {
-            functionCode: parseInt(chunks[0]),
-            responseCode: parseInt(chunks[1]),
-            commerceCode: parseInt(chunks[2]),
+            functionCode: Number.parseInt(chunks[0]),
+            responseCode: Number.parseInt(chunks[1]),
+            commerceCode: Number.parseInt(chunks[2]),
             terminalId: chunks[3],
-            responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-            successful: parseInt(chunks[1])===0,
+            responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
+            successful: Number.parseInt(chunks[1])===0,
             ticket: chunks[4],
             authorizationCode: authorizationCode,
-            amount: parseInt(chunks[6]),
+            amount: Number.parseInt(chunks[6]),
             sharesNumber: chunks[7],
             sharesAmount: chunks[8],
-            last4Digits: chunks[9] !== '' ? parseInt(chunks[9]) : null,
+            last4Digits: chunks[9] !== '' ? Number.parseInt(chunks[9]) : null,
             operationNumber: chunks[10],
             cardType: chunks[11],
             accountingDate: chunks[12],
@@ -247,7 +257,7 @@ module.exports = class POSIntegrado extends POSBase {
             realDate: chunks[15],
             realTime: chunks[16],
             employeeId: chunks[17],
-            tip: chunks[18] !== '' ? parseInt(chunks[18]) : null,
+            tip: chunks[18] !== '' ? Number.parseInt(chunks[18]) : null,
             voucher: null,
             change: chunks[20],
             commerceCode: chunks[21]

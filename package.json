@@ -8,7 +8,8 @@
     "dev": "node ./examples/index.js --watch",
     "build": "webpack",
     "start": "webpack --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:e2e": "jest tests/e2e"
   },
   "keywords": [
     "POS",
@@ -34,6 +35,16 @@
     "jest": "^29.7.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/e2e/jest.setup.js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.spec.js"
+    ],
+    "testTimeout": 15000
   },
   "engines": {
     "node": ">=20.0.0"
