@@ -1,5 +1,5 @@
 const { rawlist, input, select } = require('@inquirer/prompts')
-const Transbank = require('../dist/transbank')
+const Transbank = require('../index')
 
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
