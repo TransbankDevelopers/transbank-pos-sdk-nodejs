@@ -84,7 +84,7 @@ module.exports = class POSIntegrado extends POSBase {
             let consecutiveEmptyAuthCodes = 0;
             const command = `0260|${print}|`;
 
-            const processDetailResponse = (responsePayload, rawData) => {
+            const processDetailResponse = (responsePayload) => {
                 let detail = this.saleDetailResponse(responsePayload);
 
                 if (detail.authorizationCode === "" || detail.authorizationCode === null) {
