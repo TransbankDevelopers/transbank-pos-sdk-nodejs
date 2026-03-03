@@ -54,11 +54,11 @@ const showPosTypeMenu = async function() {
         choices: [
             {
                 name: 'POS Integrado',
-                value: 'integrado',
+                value: 'integrado'
             },
             {
                 name: 'POS Autoservicio',
-                value: 'autoservicio',
+                value: 'autoservicio'
             }
         ]
     });
@@ -324,11 +324,11 @@ const multicodeSaleOperation = async function() {
         choices: [
             {
                 name: 'Si',
-                value: true,
+                value: true
             },
             {
                 name: 'No',
-                value: false,
+                value: false
             }
         ]
     });
