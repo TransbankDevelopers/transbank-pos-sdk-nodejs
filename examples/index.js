@@ -180,6 +180,7 @@ const handleClosePort = async function() {
     }
 
     console.log('No se logro cerrar el puerto')
+    return null
 }
 
 const handleExit = async function() {
