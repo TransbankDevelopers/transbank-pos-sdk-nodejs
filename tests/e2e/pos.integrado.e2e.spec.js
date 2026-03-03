@@ -69,7 +69,7 @@ function registerTransactionTests(suite) {
             const pos = await createConnectedPos(suite);
 
             const responsePayload =
-                "0271|0|597020000540|12345678|T555|ZXCV12|2500|00|0|7788|000777|CREDITO|0212|123456******7788|MASTERCARD|20240210|163045|01|0||0|597020000540|";
+                "0271|0|597020000540|12345678|T555|ZXCV12|2500|00|0|7788|000777|CREDITO|0212|123456******7788|MASTERCARD|20240210|163045|01|0||0|597020000541|";
 
             const salePromise = pos.multicodeSale(2500, "T555", "597020000540");
             await ackNextWriteAndMaybeRespond(pos, responsePayload);
@@ -79,7 +79,8 @@ function registerTransactionTests(suite) {
             expect(response.functionCode).toBe(271);
             expect(response.responseCode).toBe(0);
             expect(response.authorizationCode).toBe("ZXCV12");
-            expect(response.commerceCode).toBe("597020000540");
+            expect(response.commerceCode).toBe(597020000540);
+            expect(response.lenderCommerceCode).toBe(597020000541);
         });
 
         it("obtiene detalle de ventas hasta dos autorizaciones vacias consecutivas", async () => {
