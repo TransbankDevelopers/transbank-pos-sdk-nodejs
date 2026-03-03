@@ -1,8 +1,9 @@
 const { rawlist, input, select } = require('@inquirer/prompts')
-const Transbank = require('../index')
+const Transbank = require('../dist/transbank')
 
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
+const EXIT_CODE = 3
 
 let pos;
 
@@ -16,10 +17,10 @@ const main = async function() {
     }
     pos.setDebug(true);
 
-    let exit = false
+    let shouldExit = false
     let isConnected = false
-
-    while(!exit) {
+    
+    while(!shouldExit) {
         let connectOption = await showConnectionMenu()
         let connectionOperationResult = await executeConnectionOption(connectOption)
 
@@ -27,11 +28,20 @@ const main = async function() {
             isConnected = true
         }
 
-        while(!exit && isConnected) {
+        if(connectionOperationResult == EXIT_CODE) {
+            shouldExit = true
+        }
+
+        while(!shouldExit && isConnected) {
             let option = await showMenu()
             let operationResult = await executeOption(option)
 
             if(operationResult == CLOSE_PORT) {
+                isConnected = false
+            }
+
+            if(operationResult == EXIT_CODE) {
+                shouldExit = true
                 isConnected = false
             }
         }
@@ -183,9 +193,8 @@ const executeOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            pos.disconnect();
-            process.exit(0);
-            break;
+            await pos.disconnect();
+            return EXIT_CODE;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -225,9 +234,8 @@ const executeConnectionOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            pos.disconnect();
-            process.exit(0);
-            break;
+            await pos.disconnect();
+            return EXIT_CODE;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
