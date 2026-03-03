@@ -4,7 +4,7 @@ const {
     connectWithPollAck
 } = require("./helpers/mockPos");
 
-async function createConnectedPos(suite) {
+const createConnectedPos = async (suite) => {
     const pos = suite.createAutoservicio();
     await connectWithPollAck(pos);
     return pos;

@@ -5,7 +5,7 @@ const {
     respondWithFrames
 } = require("./helpers/mockPos");
 
-async function createConnectedPos(suite) {
+const createConnectedPos = async (suite) => {
     const pos = suite.createIntegrado();
     await connectWithPollAck(pos);
     return pos;
