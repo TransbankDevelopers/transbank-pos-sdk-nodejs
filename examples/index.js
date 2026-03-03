@@ -32,20 +32,28 @@ const main = async function() {
             shouldExit = true
         }
 
-        while(!shouldExit && isConnected) {
-            let option = await showMenu()
-            let operationResult = await executeOption(option)
+        const operationState = await handleConnectedOperations(shouldExit, isConnected)
+        shouldExit = operationState.shouldExit
+        isConnected = operationState.isConnected
+    }
+}
 
-            if(operationResult == CLOSE_PORT) {
-                isConnected = false
-            }
+const handleConnectedOperations = async function(shouldExit, isConnected) {
+    while(!shouldExit && isConnected) {
+        let option = await showMenu()
+        let operationResult = await executeOption(option)
 
-            if(operationResult == EXIT_CODE) {
-                shouldExit = true
-                isConnected = false
-            }
+        if(operationResult == CLOSE_PORT) {
+            isConnected = false
+        }
+
+        if(operationResult == EXIT_CODE) {
+            shouldExit = true
+            isConnected = false
         }
     }
+
+    return { shouldExit, isConnected }
 }
 
 const showPosTypeMenu = async function() {
