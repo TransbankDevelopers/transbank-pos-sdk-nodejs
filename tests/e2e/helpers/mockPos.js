@@ -16,7 +16,7 @@ function frame(payload) {
     return Buffer.from(LRC.asStxEtx(payload));
 }
 
-async function waitForHostWrite(binding, previousWrite, timeoutMs = 2000) {
+const waitForHostWrite = async (binding, previousWrite, timeoutMs = 2000) => {
     const startedAt = Date.now();
     while (Date.now() - startedAt < timeoutMs) {
         const currentWrite = binding.lastWrite;
@@ -27,9 +27,9 @@ async function waitForHostWrite(binding, previousWrite, timeoutMs = 2000) {
     }
 
     throw new Error("Timeout waiting for host write");
-}
+};
 
-async function ackNextWriteAndMaybeRespond(pos, responsePayload = null) {
+const ackNextWriteAndMaybeRespond = async (pos, responsePayload = null) => {
     const serial = pos.raw_serial_port();
     while (!serial?.port) {
         await sleep(1);
@@ -44,24 +44,24 @@ async function ackNextWriteAndMaybeRespond(pos, responsePayload = null) {
         await sleep(RESPONSE_DELAY_MS);
         binding.emitData(frame(responsePayload));
     }
-}
+};
 
-async function respondWithFrames(pos, payloads) {
+const respondWithFrames = async (pos, payloads) => {
     for (const payload of payloads) {
         await sleep(RESPONSE_DELAY_MS);
         pos.raw_serial_port().port.emitData(frame(payload));
     }
-}
+};
 
-async function connectWithPollAck(pos) {
+const connectWithPollAck = async (pos) => {
     const connectPromise = pos.connect(PORT_PATH);
     pos.raw_serial_port().on("open", async () => {
         await ackNextWriteAndMaybeRespond(pos);
     });
     await connectPromise;
-}
+};
 
-async function cleanupPos(pos) {
+const cleanupPos = async (pos) => {
     if (!pos) {
         return;
     }
@@ -73,7 +73,7 @@ async function cleanupPos(pos) {
     pos.raw_parser()?.removeAllListeners();
     pos.raw_parser()?.destroy?.();
     pos.raw_serial_port()?.removeAllListeners();
-}
+};
 
 module.exports = {
     ACK,

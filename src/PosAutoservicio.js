@@ -125,7 +125,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
-                successful: successful,
+                successful: successful
             };
         }
 
@@ -168,7 +168,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
-                successful: successful,
+                successful: successful
             };
         }
         let authorizationCode = chunks[5] === undefined ? null : chunks[5].trim();
@@ -195,7 +195,7 @@ module.exports = class POSAutoservicio extends POSBase {
             sharesType: chunks[16] ?? null,
             sharesNumber: chunks[17] ?? null,
             sharesAmount: chunks[18] ?? null,
-            sharesTypeGloss: chunks[19] ?? null,
+            sharesTypeGloss: chunks[19] ?? null
         };
     }
 

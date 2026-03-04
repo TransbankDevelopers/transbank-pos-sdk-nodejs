@@ -3,6 +3,7 @@ const Transbank = require('../index')
 
 const CLOSE_PORT = 1
 const PORT_OPEN = 2
+const EXIT_CODE = 3
 
 let pos;
 
@@ -16,10 +17,10 @@ const main = async function() {
     }
     pos.setDebug(true);
 
-    let exit = false
+    let shouldExit = false
     let isConnected = false
-
-    while(!exit) {
+    
+    while(!shouldExit) {
         let connectOption = await showConnectionMenu()
         let connectionOperationResult = await executeConnectionOption(connectOption)
 
@@ -27,15 +28,32 @@ const main = async function() {
             isConnected = true
         }
 
-        while(!exit && isConnected) {
-            let option = await showMenu()
-            let operationResult = await executeOption(option)
+        if(connectionOperationResult == EXIT_CODE) {
+            shouldExit = true
+        }
 
-            if(operationResult == CLOSE_PORT) {
-                isConnected = false
-            }
+        const operationState = await handleConnectedOperations(shouldExit, isConnected)
+        shouldExit = operationState.shouldExit
+        isConnected = operationState.isConnected
+    }
+}
+
+const handleConnectedOperations = async function(shouldExit, isConnected) {
+    while(!shouldExit && isConnected) {
+        let option = await showMenu()
+        let operationResult = await executeOption(option)
+
+        if(operationResult == CLOSE_PORT) {
+            isConnected = false
+        }
+
+        if(operationResult == EXIT_CODE) {
+            shouldExit = true
+            isConnected = false
         }
     }
+
+    return { shouldExit, isConnected }
 }
 
 const showPosTypeMenu = async function() {
@@ -44,11 +62,11 @@ const showPosTypeMenu = async function() {
         choices: [
             {
                 name: 'POS Integrado',
-                value: 'integrado',
+                value: 'integrado'
             },
             {
                 name: 'POS Autoservicio',
-                value: 'autoservicio',
+                value: 'autoservicio'
             }
         ]
     });
@@ -105,92 +123,82 @@ const showPortMenu = async function(portList) {
     return answer
 }
 
-const executeOption = async function(option) {
-    switch (option) {
-        case 'poll':
-            await pos.poll()
-                .then(response => console.log('Respuesta Poll:', response))
-                .catch(error => console.log('Error al ejecutar poll:', error));
-            break;
+const handlePoll = async function() {
+    await pos.poll()
+        .then(response => console.log('Respuesta Poll:', response))
+        .catch(error => console.log('Error al ejecutar poll:', error));
+}
 
-        case 'loadKey':
-            await pos.loadKeys().then(response => console.log('Respuesta Carga de llaves:', response));
-            break;
+const handleLoadKey = async function() {
+    await pos.loadKeys().then(response => console.log('Respuesta Carga de llaves:', response));
+}
 
-        case 'getLastSale':
-            if (typeof pos.getLastSale !== 'function') {
-                console.log('Método getLastSale no disponible para este tipo de POS');
-                break;
-            }
-            await pos.getLastSale()
-                .then(response => console.log('Respuesta Última venta:', response))
-                .catch(error => console.log('Error al obtener última venta:', error));
-            break;
-
-        case 'getTotals':
-            if (typeof pos.getTotals !== 'function') {
-                console.log('Método getTotals no disponible para este tipo de POS');
-                break;
-            }
-            await pos.getTotals()
-                .then(response => console.log('Respuesta Totales:', response))
-                .catch(error => console.log('Error al obtener totales:', error));
-            break;
-            
-        case 'sale':
-            await saleOperation()
-            break;
-        
-        case 'multicodeSale':
-            await multicodeSaleOperation()
-            break;
-
-        case 'multicodeSale':
-            await multicodeSaleOperation()
-            break;
-
-        case 'refund':
-            await refundOperation()
-            break;
-
-        case 'salesDetail':
-            await pos.salesDetail(false).then(result => {
-                console.log('Detalle de ventas:', result);
-            }).catch(error => {
-                console.log('Error al obtener detalle de ventas:', error)
-            });
-            break;
-
-        case 'close':
-            await pos.closeDay().then(response => {
-                console.log('Cierre del día realizado:', response)
-            }).catch(error => {
-                console.log('Error al cerrar el día:', error)
-            });
-            break;
-        
-        case 'closePort': {
-            const result = await pos.disconnect()
-
-            if(result) {
-                console.log('Puerto desconectado')
-                return CLOSE_PORT;
-            }
-
-            console.log('No se logro cerrar el puerto')
-            break;
-        }
-
-        case 'exit':
-            console.log('Saliendo...')
-            pos.disconnect();
-            process.exit(0);
-            break;
-
-        default:
-            console.log('Opción no válida. Inténtalo de nuevo.')
-            break;
+const handleGetLastSale = async function() {
+    if (typeof pos.getLastSale !== 'function') {
+        console.log('Método getLastSale no disponible para este tipo de POS');
+        return
     }
+
+    await pos.getLastSale()
+        .then(response => console.log('Respuesta Última venta:', response))
+        .catch(error => console.log('Error al obtener última venta:', error));
+}
+
+const handleGetTotals = async function() {
+    if (typeof pos.getTotals !== 'function') {
+        console.log('Método getTotals no disponible para este tipo de POS');
+        return
+    }
+
+    await pos.getTotals()
+        .then(response => console.log('Respuesta Totales:', response))
+        .catch(error => console.log('Error al obtener totales:', error));
+}
+
+const handleSalesDetail = async function() {
+    await pos.salesDetail(false).then(result => {
+        console.log('Detalle de ventas:', result);
+    }).catch(error => {
+        console.log('Error al obtener detalle de ventas:', error)
+    });
+}
+
+const handleCloseDay = async function() {
+    await pos.closeDay().then(response => {
+        console.log('Cierre del día realizado:', response)
+    }).catch(error => {
+        console.log('Error al cerrar el día:', error)
+    });
+}
+
+const handleClosePort = async function() {
+    const result = await pos.disconnect()
+
+    if(result) {
+        console.log('Puerto desconectado')
+        return CLOSE_PORT;
+    }
+
+    console.log('No se logro cerrar el puerto')
+    return null
+}
+
+const handleExit = async function() {
+    console.log('Saliendo...')
+    await pos.disconnect();
+    return EXIT_CODE;
+}
+
+
+const executeOption = async function(option) {
+    const handler = optionHandlers[option]
+
+    if (!handler) {
+        console.log('Opción no válida. Inténtalo de nuevo.')
+        return
+    }
+
+    return handler()
 }
 
 const executeConnectionOption = async function(option) {
@@ -225,9 +233,8 @@ const executeConnectionOption = async function(option) {
 
         case 'exit':
             console.log('Saliendo...')
-            pos.disconnect();
-            process.exit(0);
-            break;
+            await pos.disconnect();
+            return EXIT_CODE;
 
         default:
             console.log('Opción no válida. Inténtalo de nuevo.')
@@ -316,11 +323,11 @@ const multicodeSaleOperation = async function() {
         choices: [
             {
                 name: 'Si',
-                value: true,
+                value: true
             },
             {
                 name: 'No',
-                value: false,
+                value: false
             }
         ]
     });
@@ -360,6 +367,20 @@ const refundOperation = async function() {
     }).catch(error => {
         console.log('Error en la devolución:', error)
     });
+}
+
+const optionHandlers = {
+    poll: handlePoll,
+    loadKey: handleLoadKey,
+    getLastSale: handleGetLastSale,
+    getTotals: handleGetTotals,
+    sale: saleOperation,
+    multicodeSale: multicodeSaleOperation,
+    refund: refundOperation,
+    salesDetail: handleSalesDetail,
+    close: handleCloseDay,
+    closePort: handleClosePort,
+    exit: handleExit
 }
 
 main()

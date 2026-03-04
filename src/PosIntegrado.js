@@ -84,7 +84,7 @@ module.exports = class POSIntegrado extends POSBase {
             let consecutiveEmptyAuthCodes = 0;
             const command = `0260|${print}|`;
 
-            const processDetailResponse = (responsePayload, rawData) => {
+            const processDetailResponse = (responsePayload) => {
                 let detail = this.saleDetailResponse(responsePayload);
 
                 if (detail.authorizationCode === "" || detail.authorizationCode === null) {
@@ -260,7 +260,7 @@ module.exports = class POSIntegrado extends POSBase {
             tip: chunks[18] !== '' ? Number.parseInt(chunks[18]) : null,
             voucher: null,
             change: chunks[20],
-            commerceCode: chunks[21]
+            lenderCommerceCode: Number.parseInt(chunks[21])
         }
 
         if (chunks[19] && chunks[19].length > 1) {
