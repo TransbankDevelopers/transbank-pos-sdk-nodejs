@@ -16,6 +16,12 @@ function buildMessage(payload) {
     return Buffer.from(LRC.asStxEtx(payload));
 }
 
+const expectResponseFields = (response, expectedFields) => {
+    Object.entries(expectedFields).forEach(([field, expectedValue]) => {
+        expect(response[field]).toBe(expectedValue);
+    });
+}
+
 const waitForHostWrite = async (binding, previousWrite, timeoutMs = 2000) => {
     const startedAt = Date.now();
     while (Date.now() - startedAt < timeoutMs) {
@@ -101,5 +107,6 @@ module.exports = {
     captureSend,
     sendReply,
     cleanupPos,
-    connectWithPollAck
+    connectWithPollAck,
+    expectResponseFields
 };
