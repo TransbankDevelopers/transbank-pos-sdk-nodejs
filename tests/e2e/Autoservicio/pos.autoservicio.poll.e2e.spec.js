@@ -4,7 +4,7 @@ const {
     buildMessage,
     captureSend,
     sendReply,
-    connectWithPollAck,
+    connectWithPollAck
 } = require("../helpers/mockPos");
 
 const createConnectedPos = async (suite) => {

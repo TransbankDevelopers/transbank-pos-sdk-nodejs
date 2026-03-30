@@ -10,7 +10,7 @@ const {
 
 const {
     multiCodeSaleDebitVoucher,
-    multiCodeSaleCreditVoucher,
+    multiCodeSaleCreditVoucher
  } = require("../helpers/autoservicioVoucherFixtures");
 
 const createConnectedPos = async (suite) => {
