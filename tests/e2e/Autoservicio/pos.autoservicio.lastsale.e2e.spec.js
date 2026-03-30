@@ -27,10 +27,10 @@ const lastSaleCreditWithVoucherResponsePayload =
             lastSaleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Última venta", () => {
+describe("POS Autoservicio - Last sale", () => {
     const suite =setupSuiteContext();
 
-    it("Última venta - Débito aprobada sin comprobante", async () => {
+    it("last sale - approved debit without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const lastSalePromise = pos.getLastSale();
@@ -66,7 +66,7 @@ describe("POS Autoservicio - Última venta", () => {
         });
     });
 
-    it("Última venta - Débito aprobada con comprobante", async () => {
+    it("last sale - approved debit with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const lastSalePromise = pos.getLastSale(true);
@@ -108,7 +108,7 @@ describe("POS Autoservicio - Última venta", () => {
         });
     });
 
-    it("Última venta - Crédito aprobada con comprobante", async () => {
+    it("last sale - approved credit with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const lastSalePromise = pos.getLastSale(true);
@@ -151,7 +151,7 @@ describe("POS Autoservicio - Última venta", () => {
         });
     });
 
-    it("Última venta - Crédito aprobada sin comprobante", async () => {
+    it("last sale - approved credit without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const lastSalePromise = pos.getLastSale();

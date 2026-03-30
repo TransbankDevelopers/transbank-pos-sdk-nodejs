@@ -14,8 +14,8 @@ const createConnectedPos = async (suite) => {
 }
 
 function registerConnectionTests(suite) {
-    describe("conexion", () => {
-        it("conecta y hace poll durante connect", async () => {
+    describe("connection", () => {
+        it("connects and performs poll during connect", async () => {
             const pos = suite.createIntegrado();
             await connectWithPollAck(pos);
             expect(pos.isConnected()).toBe(true);
@@ -24,8 +24,8 @@ function registerConnectionTests(suite) {
 }
 
 function registerConfigurationTests(suite) {
-    describe("configuracion", () => {
-        it("ejecuta loadKeys y parsea la respuesta", async () => {
+    describe("configuration", () => {
+        it("executes loadKeys and parses the response", async () => {
             const pos = await createConnectedPos(suite);
 
             const loadKeysPromise = pos.loadKeys();
@@ -40,7 +40,7 @@ function registerConfigurationTests(suite) {
             expect(response.terminalId).toBe("12345678");
         });
 
-        it("Cambia el POS a modo normal", async () => {
+        it("changes POS to normal mode", async () => {
             const pos = await createConnectedPos(suite);
 
             const promise = pos.changeToNormalMode();
@@ -53,8 +53,8 @@ function registerConfigurationTests(suite) {
 }
 
 function registerTransactionTests(suite) {
-    describe("transacciones", () => {
-        it("realiza venta y parsea la respuesta", async () => {
+    describe("transactions", () => {
+        it("performs sale and parses the response", async () => {
             const pos = await createConnectedPos(suite);
 
             const responsePayload =
@@ -73,7 +73,7 @@ function registerTransactionTests(suite) {
             expect(response.amount).toBe(1000);
         });
 
-        it("realiza venta multicodigo y parsea la respuesta", async () => {
+        it("performs multicode sale and parses the response", async () => {
             const pos = await createConnectedPos(suite);
 
             const responsePayload =
@@ -93,7 +93,7 @@ function registerTransactionTests(suite) {
             expect(response.lenderCommerceCode).toBe(597020000541);
         });
 
-        it("obtiene detalle de ventas hasta dos autorizaciones vacias consecutivas", async () => {
+        it("gets sales detail until two consecutive empty authorizations", async () => {
             const pos = await createConnectedPos(suite);
 
             const salesDetailPromise = pos.salesDetail(false);
@@ -109,7 +109,7 @@ function registerTransactionTests(suite) {
             expect(response[0].authorizationCode).toBe("AUTH01");
         });
 
-        it("realiza anulación y parsea la respuesta", async () => {
+        it("performs refund and parses the response", async () => {
             const pos = await createConnectedPos(suite);
 
             const refundPromise = pos.refund("137");
@@ -128,8 +128,8 @@ function registerTransactionTests(suite) {
 }
 
 function registerReportingTests(suite) {
-    describe("reportes y cierre", () => {
-        it("obtiene totales", async () => {
+    describe("reports and close day", () => {
+        it("gets totals", async () => {
             const pos = await createConnectedPos(suite);
 
             const totalsPromise = pos.getTotals();
@@ -144,7 +144,7 @@ function registerReportingTests(suite) {
             expect(response.txTotal).toBe(34500);
         });
 
-        it("Realiza el cierre del POS", async () => {
+        it("performs POS close day", async () => {
             const pos = await createConnectedPos(suite);
 
             const closeDayPromise = pos.closeDay();

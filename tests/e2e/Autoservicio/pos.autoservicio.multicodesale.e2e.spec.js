@@ -27,10 +27,10 @@ const multiCodeSaleCreditWithVoucherResponsePayload =
         multiCodeSaleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Transación de venta multicódigo", () => {
+describe("POS Autoservicio - Multicode sale transaction", () => {
     const suite =setupSuiteContext();
 
-    it("realiza venta multicódigo débito y parsea respuesta aprobada con comprobante", async () => {
+    it("performs debit multicode sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const salePromise = pos.multicodeSale(1000, "123456", 597029414303, true);
@@ -73,7 +73,7 @@ describe("POS Autoservicio - Transación de venta multicódigo", () => {
         });
     });
 
-     it("realiza venta multicódigo débito y parsea respuesta aprobada sin comprobante", async () => {
+     it("performs debit multicode sale and parses approved response without voucher", async () => {
          const pos = await createConnectedPos(suite);
 
          const salePromise = pos.multicodeSale(1000, "123456", 597029414303);
@@ -108,7 +108,7 @@ describe("POS Autoservicio - Transación de venta multicódigo", () => {
          });
      });
 
-     it("realiza venta multicódigo crédito y parsea respuesta aprobada con comprobante", async () => {
+     it("performs credit multicode sale and parses approved response with voucher", async () => {
          const pos = await createConnectedPos(suite);
 
         const salePromise = pos.multicodeSale(10000, "123456", 597029414303, true);
@@ -152,7 +152,7 @@ describe("POS Autoservicio - Transación de venta multicódigo", () => {
          });
      });
 
-     it("realiza venta crédito y parsea respuesta aprobada sin comprobante", async () => {
+     it("performs credit multicode sale and parses approved response without voucher", async () => {
          const pos = await createConnectedPos(suite);
 
          const salePromise = pos.multicodeSale(1000, "123456", 597029414303);

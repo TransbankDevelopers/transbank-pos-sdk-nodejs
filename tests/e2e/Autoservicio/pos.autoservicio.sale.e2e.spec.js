@@ -27,10 +27,10 @@ const saleCreditWithVoucherResponsePayload =
         saleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Transación de venta", () => {
+describe("POS Autoservicio - Sale transaction", () => {
     const suite =setupSuiteContext();
 
-    it("realiza venta débito y parsea respuesta aprobada con comprobante", async () => {
+    it("performs debit sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const salePromise = pos.sale(1000, "123456", false, true);
@@ -72,7 +72,7 @@ describe("POS Autoservicio - Transación de venta", () => {
         });
     });
 
-    it("realiza venta débito y parsea respuesta aprobada sin comprobante", async () => {
+    it("performs debit sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const salePromise = pos.sale(1000, "123456");
@@ -107,7 +107,7 @@ describe("POS Autoservicio - Transación de venta", () => {
         });
     });
 
-    it("realiza venta crédito y parsea respuesta aprobada con comprobante", async () => {
+    it("performs credit sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const salePromise = pos.sale(1000, "123456", false, true);
@@ -150,7 +150,7 @@ describe("POS Autoservicio - Transación de venta", () => {
         });
     });
 
-    it("realiza venta crédito y parsea respuesta aprobada sin comprobante", async () => {
+    it("performs credit sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const salePromise = pos.sale(1000, "123456");

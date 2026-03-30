@@ -16,7 +16,7 @@ const createConnectedPos = async (suite) => {
 describe("POS Autoservicio - Poll", () => {
     const suite =setupSuiteContext();
 
-    it("Comprueba conexión con resultado ok", async () => {
+    it("checks connection with successful result", async () => {
         const pos = await createConnectedPos(suite);
         
         const pollPromise = pos.poll();
@@ -27,7 +27,7 @@ describe("POS Autoservicio - Poll", () => {
         expect(response).toBe(true);
     });
 
-    it("Comprueba conexión con resultado error", async () => {
+    it("checks connection with error result", async () => {
         const pos = suite.createAutoservicio();
 
         await expect(pos.poll()).rejects.toThrow("You have to connect to a POS");

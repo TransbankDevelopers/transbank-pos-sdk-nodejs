@@ -26,10 +26,10 @@ const closeWithoutDataVoucherResponsePayload =
             "0510|00|597029414300|IM750164|" +
             closeWithoutDataVoucher;
 
-describe("POS Autoservicio - Transación de cierre", () => {
+describe("POS Autoservicio - Close day transaction", () => {
     const suite =setupSuiteContext();
 
-    it("realiza cierre y parsea respuesta aprobada con comprobante", async () => {
+    it("closes day and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const closePromise = pos.closeDay(true);
@@ -57,7 +57,7 @@ describe("POS Autoservicio - Transación de cierre", () => {
         });
     });
 
-    it("realiza cierre y parsea respuesta aprobada sin comprobante", async () => {
+    it("closes day and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
         const closePromise = pos.closeDay(false);
@@ -78,7 +78,7 @@ describe("POS Autoservicio - Transación de cierre", () => {
         });
     });
 
-    it("realiza cierre y parsea respuesta aprobada con comprobante cuando no hay transacciones", async () => {
+    it("closes day and parses approved response with voucher when there are no transactions", async () => {
         const pos = await createConnectedPos(suite);
 
         const closePromise = pos.closeDay(true);
@@ -106,7 +106,7 @@ describe("POS Autoservicio - Transación de cierre", () => {
         });
     });
 
-    it("realiza cierre y parsea respuesta aprobada sin comprobante cuando no hay transacciones", async () => {
+    it("closes day and parses approved response without voucher when there are no transactions", async () => {
 
         const pos = await createConnectedPos(suite);
         

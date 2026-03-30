@@ -14,10 +14,10 @@ const createConnectedPos = async (suite) => {
     return pos;
 }
 
-describe("POS Autoservicio - Carga de llaves", () => {
+describe("POS Autoservicio - Load keys", () => {
     const suite =setupSuiteContext();
 
-    it("Carga llaves ok y parsea la respuesta", async () => {
+    it("loads keys successfully and parses the response", async () => {
         const pos = await createConnectedPos(suite);
         const loadKeysPromise = pos.loadKeys();
         const sentMessage = await captureSend(pos);
@@ -36,7 +36,7 @@ describe("POS Autoservicio - Carga de llaves", () => {
         });
     });
 
-    it("Carga llaves con error y parsea la respuesta", async () => {
+    it("loads keys with error and parses the response", async () => {
         const pos = await createConnectedPos(suite);
         const loadKeysPromise = pos.loadKeys();
         const sentMessage = await captureSend(pos);

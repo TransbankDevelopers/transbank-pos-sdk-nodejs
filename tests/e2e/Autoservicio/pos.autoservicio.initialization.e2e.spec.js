@@ -14,10 +14,10 @@ const createConnectedPos = async (suite) => {
     return pos;
 }
 
-describe("POS Autoservicio - Inicialización", () => {
+describe("POS Autoservicio - Initialization", () => {
     const suite =setupSuiteContext();
 
-    it("inicializa el pos", async () => {
+    it("initializes the POS", async () => {
         const pos = await createConnectedPos(suite);
 
         const promise = pos.initialization();
@@ -27,7 +27,7 @@ describe("POS Autoservicio - Inicialización", () => {
         await expect(promise).resolves.toBe(true);
     });
 
-    it("parsea respuesta de inicializacion", async () => {
+    it("parses initialization response", async () => {
         const pos = await createConnectedPos(suite);
 
         const promise = pos.initializationResponse();
