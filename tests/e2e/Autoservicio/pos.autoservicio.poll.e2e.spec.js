@@ -14,7 +14,7 @@ const createConnectedPos = async (suite) => {
 }
 
 describe("POS Autoservicio - Poll", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("checks connection with successful result", async () => {
         const pos = await createConnectedPos(suite);

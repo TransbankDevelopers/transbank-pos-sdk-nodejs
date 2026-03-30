@@ -32,7 +32,7 @@ const lastSaleCreditWithVoucherResponsePayload =
             "|03|03|3334|CUOTAS SIN INTERES";
 
 describe("POS Autoservicio - Debit last sale", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("last sale - approved debit without voucher", async () => {
         const pos = await createConnectedPos(suite);
@@ -73,7 +73,7 @@ describe("POS Autoservicio - Debit last sale", () => {
 });
 
 describe("POS Autoservicio - Credit last sale", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("last sale - approved credit with voucher", async () => {
         const pos = await createConnectedPos(suite);

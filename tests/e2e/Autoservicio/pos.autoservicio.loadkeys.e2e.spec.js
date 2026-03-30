@@ -15,7 +15,7 @@ const createConnectedPos = async (suite) => {
 }
 
 describe("POS Autoservicio - Load keys", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("loads keys successfully and parses the response", async () => {
         const pos = await createConnectedPos(suite);

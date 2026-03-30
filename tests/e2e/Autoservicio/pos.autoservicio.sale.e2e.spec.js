@@ -31,7 +31,7 @@ const saleCreditWithVoucherResponsePayload =
             "|03|03|3334|CUOTAS SIN INTERES";
 
 describe("POS Autoservicio - Debit sale transaction", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("performs debit sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
@@ -72,7 +72,7 @@ describe("POS Autoservicio - Debit sale transaction", () => {
 
 });
 describe("POS Autoservicio - Credit sale transaction", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("performs credit sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);

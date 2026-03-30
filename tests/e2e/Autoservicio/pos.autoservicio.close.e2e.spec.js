@@ -27,7 +27,7 @@ const closeWithoutDataVoucherResponsePayload =
             closeWithoutDataVoucher;
 
 describe("POS Autoservicio - Close day transaction", () => {
-    const suite =setupSuiteContext();
+    const suite = setupSuiteContext();
 
     it("closes day and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);
