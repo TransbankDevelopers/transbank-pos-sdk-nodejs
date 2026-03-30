@@ -27,7 +27,7 @@ const multiCodeSaleCreditWithVoucherResponsePayload =
         multiCodeSaleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Multicode sale transaction", () => {
+describe("POS Autoservicio - Debit multicode sale transaction", () => {
     const suite =setupSuiteContext();
 
     it("performs debit multicode sale and parses approved response with voucher", async () => {
@@ -107,6 +107,10 @@ describe("POS Autoservicio - Multicode sale transaction", () => {
              sharesTypeGloss: null
          });
      });
+});
+
+describe("POS Autoservicio - Credit multicode sale transaction", () => {
+    const suite =setupSuiteContext();
 
      it("performs credit multicode sale and parses approved response with voucher", async () => {
          const pos = await createConnectedPos(suite);

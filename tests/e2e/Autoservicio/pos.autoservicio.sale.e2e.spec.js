@@ -27,7 +27,7 @@ const saleCreditWithVoucherResponsePayload =
         saleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Sale transaction", () => {
+describe("POS Autoservicio - Debit sale transaction", () => {
     const suite =setupSuiteContext();
 
     it("performs debit sale and parses approved response with voucher", async () => {
@@ -106,6 +106,10 @@ describe("POS Autoservicio - Sale transaction", () => {
             sharesTypeComment: undefined
         });
     });
+
+});
+describe("POS Autoservicio - Credit sale transaction", () => {
+    const suite =setupSuiteContext();
 
     it("performs credit sale and parses approved response with voucher", async () => {
         const pos = await createConnectedPos(suite);

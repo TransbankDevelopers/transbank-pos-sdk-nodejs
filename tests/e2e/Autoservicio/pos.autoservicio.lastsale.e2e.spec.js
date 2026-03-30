@@ -27,7 +27,7 @@ const lastSaleCreditWithVoucherResponsePayload =
             lastSaleCreditVoucher +
             "|03|03|3334|CUOTAS SIN INTERES";
 
-describe("POS Autoservicio - Last sale", () => {
+describe("POS Autoservicio - Debit last sale", () => {
     const suite =setupSuiteContext();
 
     it("last sale - approved debit without voucher", async () => {
@@ -40,7 +40,6 @@ describe("POS Autoservicio - Last sale", () => {
         const response = await lastSalePromise;
 
         expect(sentMessage).toEqual(buildMessage("0250|0"));
-
 
         expectResponseFields(response, {
             functionCode: 260,
@@ -107,6 +106,11 @@ describe("POS Autoservicio - Last sale", () => {
             sharesTypeComment: undefined
         });
     });
+
+});
+
+describe("POS Autoservicio - Credit last sale", () => {
+    const suite =setupSuiteContext();
 
     it("last sale - approved credit with voucher", async () => {
         const pos = await createConnectedPos(suite);
