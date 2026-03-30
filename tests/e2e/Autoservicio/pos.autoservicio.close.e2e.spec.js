@@ -110,12 +110,12 @@ describe("POS Autoservicio - Close day transaction", () => {
 
         const pos = await createConnectedPos(suite);
         
-        const loadKeysPromise = pos.closeDay();
+        const closePromise = pos.closeDay();
         const sentMessage = await captureSend(pos);
         await sendReply(pos, ACK_BYTE);
         await sendReply(pos, "0510|00|597029414300|IM750164|");
         expect(sentMessage).toEqual(buildMessage("0500|0"));
-        const response = await loadKeysPromise;
+        const response = await closePromise;
 
         expectResponseFields(response, {
             functionCode: 510,
