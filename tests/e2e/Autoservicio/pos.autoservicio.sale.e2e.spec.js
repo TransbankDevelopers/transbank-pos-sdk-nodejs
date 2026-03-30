@@ -3,7 +3,7 @@ const {
     ACK_BYTE,
     captureSend,
     sendReply,
-    connectWithPollAck,
+    connectWithPollAck
 } = require("../helpers/mockPos");
 
 const { 
