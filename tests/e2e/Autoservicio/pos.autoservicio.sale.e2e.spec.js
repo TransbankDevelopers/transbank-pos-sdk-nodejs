@@ -1,13 +1,17 @@
 const { setupSuiteContext } = require("../helpers/suiteContext");
 const {
     ACK_BYTE,
+    buildMessage,
     captureSend,
     sendReply,
     connectWithPollAck
 } = require("../helpers/mockPos");
 
 const { 
-    validateAutoservicioSaleFields,
+    validateBaseSaleFields,
+    validateSaleFields,
+    validateSharesFields,
+    validateAccountFields,
     validateVoucherContent
 } = require("../helpers/validationHelpers");
 
@@ -52,8 +56,9 @@ describe("POS Autoservicio - Debit sale transaction", () => {
 
         expect(sentMessage).toEqual(buildMessage("0200|1000|123456|1|0"));
         validateVoucherContent(response.voucher, expectedVoucherLines);
-
-        validateAutoservicioSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true, "123456", "547545", 1000, 3331, "55", "DB", "00-00-00", "331", "P ", "18032026", "123230", undefined, undefined, undefined, undefined);
+        validateBaseSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true);
+        validateSaleFields(response, "123456", "547545", 1000, "55", "18032026", "123230");
+        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
     });
 
     it("performs debit sale and parses approved response without voucher", async () => {
@@ -67,7 +72,9 @@ describe("POS Autoservicio - Debit sale transaction", () => {
 
         expect(sentMessage).toEqual(buildMessage("0200|1000|123456|0|0"));
         expect(response.voucher).toBeUndefined();
-        validateAutoservicioSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true, "123456", "700527", 1000, 3331, "56", "DB", "00-00-00", "331", "P ", "18032026", "123307", undefined, undefined, undefined, undefined);
+        validateBaseSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true);
+        validateSaleFields(response, "123456", "700527", 1000, "56", "18032026", "123307");
+        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
     });
 
 });
@@ -94,7 +101,10 @@ describe("POS Autoservicio - Credit sale transaction", () => {
 
         expect(sentMessage).toEqual(buildMessage("0200|1000|123456|1|0"));
         validateVoucherContent(response.voucher, expectedVoucherLines);
-        validateAutoservicioSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true, "123456", "316557", 10000, 6590, "57", "CR", "", "", "VI", "18032026", "123429", "03", "03", "3334", "CUOTAS SIN INTERES");
+        validateBaseSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true);
+        validateSaleFields(response, "123456", "316557", 10000, "57", "18032026", "123429");
+        validateAccountFields(response, "CR", "VI", 6590, "", "");
+        validateSharesFields(response, "03", "03", "3334", "CUOTAS SIN INTERES");
 
     });
 
@@ -109,6 +119,9 @@ describe("POS Autoservicio - Credit sale transaction", () => {
 
         expect(sentMessage).toEqual(buildMessage("0200|10000|123456|0|0"));
         expect(response.voucher).toBeNull();
-        validateAutoservicioSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true, "123456", "776549", 10000, 6590, "58", "CR", "", "", "VI", "18032026", "123506", "03", "03", "3334", "CUOTAS SIN INTERES");
+        validateBaseSaleFields(response, 210, 0, "Aprobado", 597029414300, "IM750164", true);
+        validateSaleFields(response, "123456", "776549", 10000, "58", "18032026", "123506");
+        validateAccountFields(response, "CR", "VI", 6590, "", "");
+        validateSharesFields(response, "03", "03", "3334", "CUOTAS SIN INTERES");
     });
 });

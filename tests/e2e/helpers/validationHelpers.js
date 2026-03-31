@@ -2,146 +2,76 @@ const expectResponseFields = (response, expectedFields) => {
     Object.entries(expectedFields).forEach(([field, expectedValue]) => {
         expect(response[field]).toBe(expectedValue);
     });
-}
-
-const buildBaseExpectedSaleFields = ({
-    functionCode,
-    responseCode,
-    responseMessage,
-    commerceCode,
-    terminalId,
-    successful,
-    ticket,
-    authorizationCode,
-    amount,
-    last4Digits,
-    operationNumber,
-    cardType,
-    accountingDate,
-    accountNumber,
-    cardBrand,
-    realDate,
-    realTime
-}) => ({
-    functionCode,
-    responseCode,
-    responseMessage,
-    commerceCode,
-    terminalId,
-    successful,
-    ticket,
-    authorizationCode,
-    amount,
-    last4Digits,
-    operationNumber,
-    cardType,
-    accountingDate,
-    accountNumber,
-    cardBrand,
-    realDate,
-    realTime
-});
-
-const validateAutoservicioSaleFields = (
-    posResponse,
-    functionCode,
-    responseCode,
-    responseMessage,
-    commerceCode,
-    terminalId,
-    successful,
-    ticket,
-    authorizationCode,
-    amount,
-    last4Digits,
-    operationNumber,
-    cardType,
-    accountingDate,
-    accountNumber,
-    cardBrand,
-    realDate,
-    realTime,
-    shareType,
-    sharesNumber,
-    sharesAmount,
-    sharesTypeComment) => {
-    expectResponseFields(posResponse, {
-            ...buildBaseExpectedSaleFields({
-                functionCode,
-                responseCode,
-                responseMessage,
-                commerceCode,
-                terminalId,
-                successful,
-                ticket,
-                authorizationCode,
-                amount,
-                last4Digits,
-                operationNumber,
-                cardType,
-                accountingDate,
-                accountNumber,
-                cardBrand,
-                realDate,
-                realTime
-            }),
-            shareType: shareType,
-            sharesNumber: sharesNumber,
-            sharesAmount: sharesAmount,
-            sharesTypeComment: sharesTypeComment
-        });
 };
 
-const validateAutoservicioMulticodeSaleFields = (
-    posResponse,
+const validateBaseSaleFields = (
+    response,
     functionCode,
     responseCode,
     responseMessage,
     commerceCode,
     terminalId,
-    successful,
+    successful
+) => {
+    expectResponseFields(response, {
+        functionCode: functionCode,
+        responseCode: responseCode,
+        responseMessage: responseMessage,
+        commerceCode: commerceCode,
+        terminalId: terminalId,
+        successful: successful
+    });
+};
+
+const validateSaleFields = (
+    response,
     ticket,
     authorizationCode,
     amount,
-    last4Digits,
     operationNumber,
-    cardType,
-    accountingDate,
-    accountNumber,
-    cardBrand,
     realDate,
-    realTime,
-    lenderCommerceCode,
+    realTime
+) => {
+    expectResponseFields(response, {
+        ticket: ticket,
+        authorizationCode: authorizationCode,
+        amount: amount,
+        operationNumber: operationNumber,
+        realDate: realDate,
+        realTime: realTime
+    });
+};
+
+const validateSharesFields = (
+    response,
     sharesType,
     sharesNumber,
     sharesAmount,
-    sharesTypeComment) => {
-    expectResponseFields(posResponse, {
-            ...buildBaseExpectedSaleFields({
-                functionCode,
-                responseCode,
-                responseMessage,
-                commerceCode,
-                terminalId,
-                successful,
-                ticket,
-                authorizationCode,
-                amount,
-                last4Digits,
-                operationNumber,
-                cardType,
-                accountingDate,
-                accountNumber,
-                cardBrand,
-                realDate,
-                realTime
-            }),
-            lenderCommerceCode: lenderCommerceCode,
-            sharesType: sharesType,
-            sharesNumber: sharesNumber,
-            sharesAmount: sharesAmount,
-            sharesTypeGloss: sharesTypeComment
-        });
+    sharesTypeGloss
+) => {
+    expectResponseFields(response, {
+        sharesType: sharesType,
+        sharesNumber: sharesNumber,
+        sharesAmount: sharesAmount,
+        sharesTypeGloss: sharesTypeGloss
+    });
+};
+
+const validateAccountFields = (
+    response,
+    cardType,
+    cardBrand,
+    last4Digits,
+    accountingDate,
+    accountNumber
+) => {
+    expectResponseFields(response, {
+        cardType: cardType,
+        cardBrand: cardBrand,
+        last4Digits: last4Digits,
+        accountingDate: accountingDate,
+        accountNumber: accountNumber
+    });
 };
 
 const validateVoucherContent = (voucher, expectedLines) => {
@@ -154,7 +84,9 @@ const validateVoucherContent = (voucher, expectedLines) => {
 
 module.exports = {
     expectResponseFields,
-    validateAutoservicioSaleFields,
-    validateVoucherContent,
-    validateAutoservicioMulticodeSaleFields
+    validateBaseSaleFields,
+    validateSaleFields,
+    validateSharesFields,
+    validateAccountFields,
+    validateVoucherContent
 };
