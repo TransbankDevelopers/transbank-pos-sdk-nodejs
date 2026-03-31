@@ -36,7 +36,7 @@ module.exports = class POSAutoservicio extends POSBase {
             return `${functionCode}|${amount}|${ticket}|${voucherStr}|${statusStr}|${code}`;
         }
 
-        return `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}`;
+        return `${functionCode}|${amount}|${ticket}|${voucherStr}|${statusStr}`;
     }
 
     sale(
