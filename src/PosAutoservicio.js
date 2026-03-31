@@ -186,10 +186,10 @@ module.exports = class POSAutoservicio extends POSBase {
             realDate: chunks[13],
             realTime: chunks[14],
             voucher: chunks[15]?.match(/.{1,40}/g),
-            shareType: chunks[16],
+            sharesType: chunks[16],
             sharesNumber: chunks[17],
             sharesAmount: chunks[18],
-            sharesTypeComment: chunks[19]
+            sharesTypeGloss: chunks[19]
         };
         return response;
     }
