@@ -28,17 +28,15 @@ module.exports = class POSAutoservicio extends POSBase {
         sendStatus,
         commerceCode = null
     ) {
-        const formattedAmount = amount.toString().padStart(9, "0");
-        const formattedTicket = ticket.toString().padStart(6, "0").slice(0, 20);
         const statusStr = this.getBooleanFlag(sendStatus);
         const voucherStr = this.getBooleanFlag(sendVoucher);
 
         if (functionCode === FUNCTION_CODE_MULTICODE_SALE_REQUEST) {
             const code = commerceCode || "0";
-            return `${functionCode}|${formattedAmount}|${formattedTicket}|${voucherStr}|${statusStr}|${code}`;
+            return `${functionCode}|${amount}|${ticket}|${voucherStr}|${statusStr}|${code}`;
         }
 
-        return `${functionCode}|${formattedAmount}|${formattedTicket}||${voucherStr}|${statusStr}`;
+        return `${functionCode}|${amount}|${ticket}||${voucherStr}|${statusStr}`;
     }
 
     sale(
