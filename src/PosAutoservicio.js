@@ -228,11 +228,12 @@ module.exports = class POSAutoservicio extends POSBase {
             cardBrand: chunks[12],
             realDate: chunks[13],
             realTime: chunks[14],
-            printingField: chunks[15]?.match(/.{1,40}/g) ?? null,
-            sharesType: chunks[16] ?? null,
-            sharesNumber: chunks[17] ?? null,
-            sharesAmount: chunks[18] ?? null,
-            sharesTypeGloss: chunks[19] ?? null
+            lenderCommerceCode: Number.parseInt(chunks[15]),
+            printingField: chunks[16]?.match(/.{1,40}/g) ?? null,
+            sharesType: chunks[17] ?? null,
+            sharesNumber: chunks[18] ?? null,
+            sharesAmount: chunks[19] ?? null,
+            sharesTypeGloss: chunks[20] ?? null
         };
     }
 };
