@@ -166,7 +166,7 @@ describe("POS Autoservicio - Credit sale transaction", () => {
     it("performs credit sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
 
-        const salePromise = pos.sale(1000, "123456");
+        const salePromise = pos.sale(10000, "123456");
         const sentMessage = await captureSend(pos);
         await sendReply(pos, ACK_BYTE);
         await sendReply(
