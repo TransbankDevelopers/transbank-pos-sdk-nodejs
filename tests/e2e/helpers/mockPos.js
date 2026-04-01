@@ -1,6 +1,6 @@
 const LRC = require("lrc-calculator");
 
-const ACK = 0x06;
+const ACK_BYTE = 0x06;
 const PORT_PATH = "/dev/mock-pos";
 const RESPONSE_DELAY_MS = 120;
 
@@ -9,11 +9,17 @@ function sleep(ms) {
 }
 
 function isAck(buffer) {
-    return Buffer.isBuffer(buffer) && buffer.length === 1 && buffer[0] === ACK;
+    return Buffer.isBuffer(buffer) && buffer.length === 1 && buffer[0] === ACK_BYTE;
 }
 
-function frame(payload) {
+function buildMessage(payload) {
     return Buffer.from(LRC.asStxEtx(payload));
+}
+
+const expectResponseFields = (response, expectedFields) => {
+    Object.entries(expectedFields).forEach(([field, expectedValue]) => {
+        expect(response[field]).toBe(expectedValue);
+    });
 }
 
 const waitForHostWrite = async (binding, previousWrite, timeoutMs = 2000) => {
@@ -29,34 +35,53 @@ const waitForHostWrite = async (binding, previousWrite, timeoutMs = 2000) => {
     throw new Error("Timeout waiting for host write");
 };
 
-const ackNextWriteAndMaybeRespond = async (pos, responsePayload = null) => {
+const getBinding = async (pos) => {
     const serial = pos.raw_serial_port();
     while (!serial?.port) {
         await sleep(1);
     }
-
-    const binding = serial.port;
-    const previousWrite = binding.lastWrite;
-    await waitForHostWrite(binding, previousWrite);
-    binding.emitData(Buffer.from([ACK]));
-
-    if (responsePayload) {
-        await sleep(RESPONSE_DELAY_MS);
-        binding.emitData(frame(responsePayload));
-    }
+    return serial.port;
 };
 
-const respondWithFrames = async (pos, payloads) => {
-    for (const payload of payloads) {
-        await sleep(RESPONSE_DELAY_MS);
-        pos.raw_serial_port().port.emitData(frame(payload));
+const sendDeviceReply = async (binding, reply) => {
+    if (reply === ACK_BYTE || (Buffer.isBuffer(reply) && isAck(reply))) {
+        binding.emitData(Buffer.from([ACK_BYTE]));
+        return;
     }
+
+    if (typeof reply === "string") {
+        await sleep(RESPONSE_DELAY_MS);
+        binding.emitData(buildMessage(reply));
+        return;
+    }
+
+    throw new Error("Invalid POS reply. Use ACK or a payload string.");
+};
+
+const captureSend = async (pos) => {
+    const binding = await getBinding(pos);
+    const hostWrite = await waitForHostWrite(binding, binding.lastWrite);
+    return hostWrite;
+};
+
+const sendReply = async (pos, reply) => {
+    const binding = await getBinding(pos);
+
+    if (Array.isArray(reply)) {
+        for (const currentReply of reply) {
+            await sendDeviceReply(binding, currentReply);
+        }
+        return;
+    }
+
+    await sendDeviceReply(binding, reply);
 };
 
 const connectWithPollAck = async (pos) => {
     const connectPromise = pos.connect(PORT_PATH);
     pos.raw_serial_port().on("open", async () => {
-        await ackNextWriteAndMaybeRespond(pos);
+        await captureSend(pos);
+        await sendReply(pos, ACK_BYTE);
     });
     await connectPromise;
 };
@@ -76,11 +101,12 @@ const cleanupPos = async (pos) => {
 };
 
 module.exports = {
-    ACK,
+    ACK_BYTE,
     PORT_PATH,
-    frame,
-    ackNextWriteAndMaybeRespond,
+    buildMessage,
+    captureSend,
+    sendReply,
     cleanupPos,
     connectWithPollAck,
-    respondWithFrames
+    expectResponseFields
 };
