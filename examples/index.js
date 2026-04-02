@@ -57,7 +57,7 @@ const main = async function () {
 const handleConnectedOperations = async function (shouldExit, isConnected) {
     while (!shouldExit && isConnected) {
         const option = await showMenu(selectedPosType);
-        const operationResult = await executeOption(option, selectedPosType);
+        const operationResult = await executeOption(option);
 
         if (operationResult === CLOSE_PORT) {
             isConnected = false;
