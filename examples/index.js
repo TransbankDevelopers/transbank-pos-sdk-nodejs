@@ -1,377 +1,479 @@
-const { rawlist, input, select } = require('@inquirer/prompts')
-const Transbank = require('../index')
+const { rawlist, input, select } = require("@inquirer/prompts");
+const Transbank = require("../index");
 
-const CLOSE_PORT = 1
-const PORT_OPEN = 2
-const EXIT_CODE = 3
+const CLOSE_PORT = 1;
+const PORT_OPEN = 2;
+const EXIT_CODE = 3;
 
 let pos;
+let selectedPosType;
 
-const main = async function() {
-    const posType = await showPosTypeMenu();
+const COMMON_POS_OPERATION_CHOICES = [
+    { name: "Poll", value: "poll" },
+    { name: "Carga de llaves", value: "loadKey" },
+    { name: "Obtener última venta", value: "getLastSale" },
+    { name: "Realizar una venta", value: "sale" },
+    { name: "Realizar una venta multicódigo", value: "multicodeSale" },
+    { name: "Realizar una devolución", value: "refund" },
+    { name: "Cerrar sesión POS", value: "close" }
+];
 
-    if (posType === 'integrado') {
+const askYesNo = async function (message) {
+    return select({
+        message,
+        choices: [
+            { name: "Si", value: true },
+            { name: "No", value: false }
+        ]
+    });
+};
+
+const main = async function () {
+    selectedPosType = await showPosTypeMenu();
+
+    if (selectedPosType === "integrado") {
         pos = new Transbank.POSIntegrado();
     } else {
         pos = new Transbank.POSAutoservicio();
     }
+
     pos.setDebug(true);
 
-    let shouldExit = false
-    let isConnected = false
-    
-    while(!shouldExit) {
-        let connectOption = await showConnectionMenu()
-        let connectionOperationResult = await executeConnectionOption(connectOption)
+    let shouldExit = false;
+    let isConnected = false;
 
-        if(connectionOperationResult == PORT_OPEN) {
-            isConnected = true
+    while (!shouldExit) {
+        const connectOption = await showConnectionMenu();
+        const connectionOperationResult =
+            await executeConnectionOption(connectOption);
+
+        if (connectionOperationResult === PORT_OPEN) {
+            isConnected = true;
         }
 
-        if(connectionOperationResult == EXIT_CODE) {
-            shouldExit = true
+        if (connectionOperationResult === EXIT_CODE) {
+            shouldExit = true;
         }
 
-        const operationState = await handleConnectedOperations(shouldExit, isConnected)
-        shouldExit = operationState.shouldExit
-        isConnected = operationState.isConnected
+        const operationState = await handleConnectedOperations(
+            shouldExit,
+            isConnected
+        );
+        shouldExit = operationState.shouldExit;
+        isConnected = operationState.isConnected;
     }
-}
+};
 
-const handleConnectedOperations = async function(shouldExit, isConnected) {
-    while(!shouldExit && isConnected) {
-        let option = await showMenu()
-        let operationResult = await executeOption(option)
+const handleConnectedOperations = async function (shouldExit, isConnected) {
+    while (!shouldExit && isConnected) {
+        const option = await showMenu(selectedPosType);
+        const operationResult = await executeOption(option);
 
-        if(operationResult == CLOSE_PORT) {
-            isConnected = false
+        if (operationResult === CLOSE_PORT) {
+            isConnected = false;
         }
 
-        if(operationResult == EXIT_CODE) {
-            shouldExit = true
-            isConnected = false
+        if (operationResult === EXIT_CODE) {
+            shouldExit = true;
+            isConnected = false;
         }
     }
 
-    return { shouldExit, isConnected }
-}
+    return { shouldExit, isConnected };
+};
 
-const showPosTypeMenu = async function() {
-    const answer = await select({
-        message: 'Seleccione el tipo de POS a utilizar:',
+const showPosTypeMenu = async function () {
+    return select({
+        message: "Seleccione el tipo de POS a utilizar:",
         choices: [
-            {
-                name: 'POS Integrado',
-                value: 'integrado'
-            },
-            {
-                name: 'POS Autoservicio',
-                value: 'autoservicio'
-            }
+            { name: "POS Integrado", value: "integrado" },
+            { name: "POS Autoservicio", value: "autoservicio" }
         ]
     });
+};
+
+const getOperationsByPosType = function (posType) {
+    if (posType === "integrado") {
+        return [
+            ...COMMON_POS_OPERATION_CHOICES,
+            { name: "Cambiar a modo normal", value: "changeToNormalMode" },
+            { name: "Obtener totales", value: "getTotals" },
+            { name: "Ver detalle de ventas", value: "salesDetail" }
+        ];
+    }
+
+    return [
+        ...COMMON_POS_OPERATION_CHOICES,
+        { name: "Inicializar POS", value: "initialization" },
+        {
+            name: "Respuesta de inicialización",
+            value: "initializationResponse"
+        }
+    ];
+};
+
+const showMenu = async function (posType) {
+    const answer = await rawlist({
+        message: "Seleccione una opción:",
+        choices: [
+            ...getOperationsByPosType(posType),
+            { name: "Cerrar Puerto", value: "closePort" },
+            { name: "Salir", value: "exit" }
+        ]
+    });
+
     return answer;
-}
+};
 
-const showMenu = async function() {
-    const answer = await rawlist({
-        message: 'Seleccione una opción:',
+const showConnectionMenu = async function () {
+    return rawlist({
+        message: "Seleccione una opción:",
         choices: [
-            {name: 'Poll', value: 'poll'},
-            {name: 'Carga de llaves', value: 'loadKey'},
-            {name: 'Obtener última venta', value: 'getLastSale'},
-            {name: 'Obtener totales', value: 'getTotals'},
-            {name: 'Realizar una venta', value: 'sale'},
-            {name: 'Realizar una venta multicódigo', value: 'multicodeSale'},
-            {name: 'Realizar una devolución', value: 'refund'},
-            {name: 'Ver detalle de ventas', value: 'salesDetail'},
-            {name: 'Cerrar sesión POS', value: 'close'},
-            {name: 'Cerrar Puerto', value: 'closePort'},
-            {name: 'Salir', value: 'exit'}
+            { name: "Auto conectar POS", value: "autoConnect" },
+            { name: "Seleccionar puerto manualmente", value: "listPort" },
+            { name: "Salir", value: "exit" }
         ]
-    })
+    });
+};
 
-    return answer
-}
-
-const showConnectionMenu = async function() {
-    const answer = await rawlist({
-        message: 'Seleccione una opción:',
-        choices: [
-            {name: 'Auto conectar POS', value: 'autoConnect'},
-            {name: 'Seleccionar puerto manualmente', value: 'listPort'},
-            {name: 'Salir', value: 'exit'}
-        ]
-    })
-
-    return answer
-}
-
-const showPortMenu = async function(portList) {
+const showPortMenu = async function (portList) {
     const choices = portList.map((port) => {
         return {
             name: `Puerto ${port.path}`,
             value: port.path
-        }
-    })
+        };
+    });
 
-    const answer = await rawlist({
-        message: 'Seleccione una opción:',
-        choices: choices
-    })
+    return rawlist({
+        message: "Seleccione una opción:",
+        choices
+    });
+};
 
-    return answer
-}
+const handlePoll = async function () {
+    await pos
+        .poll()
+        .then((response) => console.log("Respuesta Poll:", response))
+        .catch((error) => console.log("Error al ejecutar poll:", error));
+};
 
-const handlePoll = async function() {
-    await pos.poll()
-        .then(response => console.log('Respuesta Poll:', response))
-        .catch(error => console.log('Error al ejecutar poll:', error));
-}
+const handleLoadKey = async function () {
+    await pos
+        .loadKeys()
+        .then((response) => console.log("Respuesta Carga de llaves:", response))
+        .catch((error) =>
+            console.log("Error al ejecutar carga de llaves:", error)
+        );
+};
 
-const handleLoadKey = async function() {
-    await pos.loadKeys().then(response => console.log('Respuesta Carga de llaves:', response));
-}
+const handleInitialization = async function () {
+    await pos
+        .initialization()
+        .then((response) => console.log("Respuesta Initialization:", response))
+        .catch((error) =>
+            console.log("Error al ejecutar initialization:", error)
+        );
+};
 
-const handleGetLastSale = async function() {
-    if (typeof pos.getLastSale !== 'function') {
-        console.log('Método getLastSale no disponible para este tipo de POS');
-        return
+const handleInitializationResponse = async function () {
+    await pos
+        .initializationResponse()
+        .then((response) =>
+            console.log("Respuesta InitializationResponse:", response)
+        )
+        .catch((error) =>
+            console.log("Error al ejecutar initializationResponse:", error)
+        );
+};
+
+const handleGetLastSale = async function () {
+    if (selectedPosType === "autoservicio") {
+        const sendVoucher = await askYesNo(
+            "¿Desea incluir voucher en la respuesta?"
+        );
+        await pos
+            .getLastSale(sendVoucher)
+            .then((response) =>
+                console.log("Respuesta Última venta:", response)
+            )
+            .catch((error) =>
+                console.log("Error al obtener última venta:", error)
+            );
+        return;
     }
 
-    await pos.getLastSale()
-        .then(response => console.log('Respuesta Última venta:', response))
-        .catch(error => console.log('Error al obtener última venta:', error));
-}
+    await pos
+        .getLastSale()
+        .then((response) => console.log("Respuesta Última venta:", response))
+        .catch((error) => console.log("Error al obtener última venta:", error));
+};
 
-const handleGetTotals = async function() {
-    if (typeof pos.getTotals !== 'function') {
-        console.log('Método getTotals no disponible para este tipo de POS');
-        return
+const handleGetTotals = async function () {
+    await pos
+        .getTotals()
+        .then((response) => console.log("Respuesta Totales:", response))
+        .catch((error) => console.log("Error al obtener totales:", error));
+};
+
+const handleSalesDetail = async function () {
+    const printOnPos = await askYesNo("¿Desea imprimir el detalle en el POS?");
+
+    await pos
+        .salesDetail(printOnPos)
+        .then((result) => {
+            console.log("Detalle de ventas:", result);
+        })
+        .catch((error) => {
+            console.log("Error al obtener detalle de ventas:", error);
+        });
+};
+
+const handleCloseDay = async function () {
+    if (selectedPosType === "autoservicio") {
+        const sendVoucher = await askYesNo(
+            "¿Desea incluir voucher de cierre en la respuesta?"
+        );
+        await pos
+            .closeDay(sendVoucher)
+            .then((response) => {
+                console.log("Cierre del día realizado:", response);
+            })
+            .catch((error) => {
+                console.log("Error al cerrar el día:", error);
+            });
+        return;
     }
 
-    await pos.getTotals()
-        .then(response => console.log('Respuesta Totales:', response))
-        .catch(error => console.log('Error al obtener totales:', error));
-}
+    await pos
+        .closeDay()
+        .then((response) => {
+            console.log("Cierre del día realizado:", response);
+        })
+        .catch((error) => {
+            console.log("Error al cerrar el día:", error);
+        });
+};
 
-const handleSalesDetail = async function() {
-    await pos.salesDetail(false).then(result => {
-        console.log('Detalle de ventas:', result);
-    }).catch(error => {
-        console.log('Error al obtener detalle de ventas:', error)
-    });
-}
+const handleChangeToNormalMode = async function () {
+    await pos
+        .changeToNormalMode()
+        .then((response) =>
+            console.log("POS cambiado a modo normal:", response)
+        )
+        .catch((error) =>
+            console.log("Error al cambiar a modo normal:", error)
+        );
+};
 
-const handleCloseDay = async function() {
-    await pos.closeDay().then(response => {
-        console.log('Cierre del día realizado:', response)
-    }).catch(error => {
-        console.log('Error al cerrar el día:', error)
-    });
-}
+const handleClosePort = async function () {
+    const result = await pos.disconnect();
 
-const handleClosePort = async function() {
-    const result = await pos.disconnect()
-
-    if(result) {
-        console.log('Puerto desconectado')
+    if (result) {
+        console.log("Puerto desconectado");
         return CLOSE_PORT;
     }
 
-    console.log('No se logro cerrar el puerto')
-    return null
-}
+    console.log("No se logro cerrar el puerto");
+    return null;
+};
 
-const handleExit = async function() {
-    console.log('Saliendo...')
+const handleExit = async function () {
+    console.log("Saliendo...");
     await pos.disconnect();
     return EXIT_CODE;
-}
+};
 
-
-const executeOption = async function(option) {
-    const handler = optionHandlers[option]
+const executeOption = async function (option) {
+    const handler = optionHandlers[option];
 
     if (!handler) {
-        console.log('Opción no válida. Inténtalo de nuevo.')
-        return
+        console.log("Opción no válida. Inténtalo de nuevo.");
+        return;
     }
 
-    return handler()
-}
+    return handler();
+};
 
-const executeConnectionOption = async function(option) {
+const executeConnectionOption = async function (option) {
     switch (option) {
-        case 'autoConnect':
-            await autoConnect()
-            break;
+        case "autoConnect":
+            return autoConnect();
 
-        case 'listPort': {
+        case "listPort": {
             const portList = await pos.listPorts();
-            if(portList.length === 0) {
-                console.log('No hay puertos disponibles')
-                return
+            if (portList.length === 0) {
+                console.log("No hay puertos disponibles");
+                return;
             }
 
-            const selectedPort = await showPortMenu(portList)
+            const selectedPort = await showPortMenu(portList);
 
             try {
-                const result = await pos.connect(selectedPort)
+                const result = await pos.connect(selectedPort);
 
-                if(result) {
-                    console.log('Puerto conectado')
+                if (result) {
+                    console.log("Puerto conectado");
                     return PORT_OPEN;
                 }
-            } catch(error) {
-                console.log(error.message)
+            } catch (error) {
+                console.log(error.message);
             }
 
-            console.log('No se logro abrir el puerto')   
+            console.log("No se logro abrir el puerto");
             break;
         }
 
-        case 'exit':
-            console.log('Saliendo...')
+        case "exit":
+            console.log("Saliendo...");
             await pos.disconnect();
             return EXIT_CODE;
 
         default:
-            console.log('Opción no válida. Inténtalo de nuevo.')
+            console.log("Opción no válida. Inténtalo de nuevo.");
             break;
     }
-}
+};
 
-const autoConnect = async function() {
+const autoConnect = async function () {
     return new Promise((resolve) => {
-        pos.autoconnect().then(port => {
-            if (port) {
-                console.log('Conectado a', port.path)
-                resolve(PORT_OPEN)
-            } else {
-                console.log('No se pudo conectar a un POS. Saliendo del programa...')
-            }
-        }).catch(error => {
-            console.log('Error al conectar:', error)
-            console.log('No se pudo conectar a un POS. Saliendo del programa...')
+        pos.autoconnect()
+            .then((port) => {
+                if (port) {
+                    console.log("Conectado a", port.path);
+                    resolve(PORT_OPEN);
+                } else {
+                    console.log(
+                        "No se pudo conectar a un POS. Saliendo del programa..."
+                    );
+                }
+            })
+            .catch((error) => {
+                console.log("Error al conectar:", error);
+                console.log(
+                    "No se pudo conectar a un POS. Saliendo del programa..."
+                );
+            });
+    });
+};
+
+const saleOperation = async function () {
+    const amount = await input({
+        message: "Ingrese el monto de la venta:",
+        default: "1000"
+    });
+
+    const ticket = await input({
+        message: "Ingrese el ticket de la venta:",
+        default: "ABC123"
+    });
+
+    const sendStatus = await askYesNo("¿Desea recibir mensajes intermedios?");
+    const sendVoucher = await askYesNo(
+        "¿Desea el voucher en la respuesta JSON?"
+    );
+
+    await pos
+        .sale(amount, ticket, sendStatus, sendVoucher, (intermediateResponse) =>
+            console.log(intermediateResponse)
+        )
+        .then((response) => {
+            console.log("Respuesta de la venta:", response);
+        })
+        .catch((error) => {
+            console.log("Error en la venta:", error);
         });
-    })
-}
+};
 
-const saleOperation = async function() {
+const multicodeSaleOperation = async function () {
     const amount = await input({
-        message: 'Ingrese el monto de la venta:',
-        default: '1000'
-    })
+        message: "Ingrese el monto de la venta:",
+        default: "1000"
+    });
 
     const ticket = await input({
-        message: 'Ingrese el ticket de la venta:',
-        default: 'ABC123'
-    })
-
-    const intermediateMessages = await select({
-    message: '¿Desea recibir mensajes intermedios?',
-    choices: [
-            { name: 'Si', value: true },
-            { name: 'No', value: false }
-        ]
+        message: "Ingrese el ticket de la venta:",
+        default: "ABC123"
     });
-
-    const printVoucher = await select({
-        message: '¿Desea el voucher en la respuesta JSON?',
-        choices: [
-            {
-                name: 'Si',
-                value: true,
-                description: 'Se imprimirá el voucher en la respuesta' 
-            },
-            {
-                name: 'No',
-                value: false,
-                description: 'El POS imprimirá el voucher'
-            }
-        ]
-    });
-
-    await pos.sale(amount, ticket, intermediateMessages, printVoucher, (intermediateResponse) => console.log(intermediateResponse))
-    .then(response => {
-        console.log('Respuesta de la venta:', response);
-    })
-    .catch(error => {
-        console.log('Error en la venta:', error)
-    });
-}
-
-const multicodeSaleOperation = async function() {
-    const amount = await input({
-        message: 'Ingrese el monto de la venta:',
-        default: '1000'
-    })
-
-    const ticket = await input({
-        message: 'Ingrese el ticket de la venta:',
-        default: 'ABC123'
-    })
 
     const commerceCode = await input({
-        message: 'Ingrese el código de comercio del proveedor:',
-        default: '597029414308'
-    })
-
-    const sendVoucher = await select({
-        message: '¿Devolver voucher formateado? (Campo Impresión)',
-        choices: [
-            {
-                name: 'Si',
-                value: true
-            },
-            {
-                name: 'No',
-                value: false
-            }
-        ]
+        message: "Ingrese el código de comercio del proveedor:",
+        default: "597029414308"
     });
 
-    const intermediateMessages = await select({
-    message: 'Recibir mensajes intermedios? (Enviar Mensajes)',
-    choices: [
-        {
-            name: 'Si',
-            value: true,
-            description: 'Se recibirán mensajes intermedios durante la venta.'
-        },
-        {
-            name: 'No',
-            value: false,
-            description: 'Solo se recibe la respuesta de la venta.'
-        }
-        ]
-    });
+    const sendStatus = await askYesNo("¿Desea recibir mensajes intermedios?");
+    const sendVoucher = await askYesNo(
+        "¿Desea incluir voucher en la respuesta?"
+    );
 
-    await pos.multicodeSale(amount, ticket, commerceCode, sendVoucher, intermediateMessages, (intermediateResponse) => console.log(intermediateResponse))
-    .then(response => {
-        console.log('Respuesta de la venta multicódigo:', response);
-    })
-    .catch(error => {
-        console.log('Error en la venta multicódigo:', error)
-    });
-}
+    if (selectedPosType === "autoservicio") {
+        await pos
+            .multicodeSale(
+                amount,
+                ticket,
+                commerceCode,
+                sendVoucher,
+                sendStatus,
+                (intermediateResponse) => console.log(intermediateResponse)
+            )
+            .then((response) => {
+                console.log("Respuesta de la venta multicódigo:", response);
+            })
+            .catch((error) => {
+                console.log("Error en la venta multicódigo:", error);
+            });
+        return;
+    }
 
-const refundOperation = async function() {
-    const operationId = await input({
-        message: 'Ingresa el número de operación'
-    })
+    await pos
+        .multicodeSale(
+            amount,
+            ticket,
+            commerceCode,
+            sendStatus,
+            sendVoucher,
+            (intermediateResponse) => console.log(intermediateResponse)
+        )
+        .then((response) => {
+            console.log("Respuesta de la venta multicódigo:", response);
+        })
+        .catch((error) => {
+            console.log("Error en la venta multicódigo:", error);
+        });
+};
 
-    await pos.refund(operationId).then(data => {
-        console.log('Devolución realizada:', data)
-    }).catch(error => {
-        console.log('Error en la devolución:', error)
-    });
-}
+const refundOperation = async function () {
+    if (selectedPosType === "integrado") {
+        const operationId = await input({
+            message: "Ingresa el número de operación"
+        });
+
+        await pos
+            .refund(operationId)
+            .then((data) => {
+                console.log("Devolución realizada:", data);
+            })
+            .catch((error) => {
+                console.log("Error en la devolución:", error);
+            });
+        return;
+    }
+
+    await pos
+        .refund()
+        .then((data) => {
+            console.log("Devolución realizada:", data);
+        })
+        .catch((error) => {
+            console.log("Error en la devolución:", error);
+        });
+};
 
 const optionHandlers = {
     poll: handlePoll,
     loadKey: handleLoadKey,
+    initialization: handleInitialization,
+    initializationResponse: handleInitializationResponse,
+    changeToNormalMode: handleChangeToNormalMode,
     getLastSale: handleGetLastSale,
     getTotals: handleGetTotals,
     sale: saleOperation,
@@ -381,6 +483,6 @@ const optionHandlers = {
     close: handleCloseDay,
     closePort: handleClosePort,
     exit: handleExit
-}
+};
 
-main()
+main();

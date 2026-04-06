@@ -1,9 +1,9 @@
-const POSBase = require('./PosBase')
-const FUNCTION_CODE_SALE_REQUEST = '0200';
-const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
+const POSBase = require("./PosBase");
+const FUNCTION_CODE_SALE_REQUEST = "0200";
+const FUNCTION_CODE_MULTICODE_SALE_REQUEST = "0270";
+const SUCCESSFUL_INITIALIZATION_CODE = 90;
 
 module.exports = class POSAutoservicio extends POSBase {
-
     /*
      |--------------------------------------------------------------------------
      | Auxiliary Methods
@@ -20,50 +20,81 @@ module.exports = class POSAutoservicio extends POSBase {
      |--------------------------------------------------------------------------
      */
 
-     buildSaleCommand(functionCode, amount, ticket, sendVoucher, sendStatus, commerceCode = null) {
-        const formattedAmount = amount.toString().padStart(9, "0");
-        const formattedTicket = ticket.toString().padStart(6, "0").slice(0, 20);
+    buildSaleCommand(
+        functionCode,
+        amount,
+        ticket,
+        sendVoucher,
+        sendStatus,
+        commerceCode = null
+    ) {
         const statusStr = this.getBooleanFlag(sendStatus);
         const voucherStr = this.getBooleanFlag(sendVoucher);
 
         if (functionCode === FUNCTION_CODE_MULTICODE_SALE_REQUEST) {
-            const code = commerceCode || '0';
-            return `${functionCode}|${formattedAmount}|${formattedTicket}|${voucherStr}|${statusStr}|${code}`;
+            const code = commerceCode || "0";
+            return `${functionCode}|${amount}|${ticket}|${voucherStr}|${statusStr}|${code}`;
         }
-        
-        return `${functionCode}|${formattedAmount}|${formattedTicket}||${voucherStr}|${statusStr}`;
+
+        return `${functionCode}|${amount}|${ticket}|${voucherStr}|${statusStr}`;
     }
 
-    sale(amount, ticket, sendStatus = false, sendVoucher = false, callback = null) {
-        const command = this.buildSaleCommand(FUNCTION_CODE_SALE_REQUEST, amount, ticket, sendVoucher, sendStatus);
+    sale(
+        amount,
+        ticket,
+        sendStatus = false,
+        sendVoucher = false,
+        callback = null
+    ) {
+        const command = this.buildSaleCommand(
+            FUNCTION_CODE_SALE_REQUEST,
+            amount,
+            ticket,
+            sendVoucher,
+            sendStatus
+        );
         return this.send(command, true, callback).then((data) => {
-            return this.saleResponse(data)
-        })
+            return this.saleResponse(data);
+        });
     }
 
-    multicodeSale(amount, ticket, commerceCode, sendVoucher = false, sendStatus = false, callback = null) {
-        const command = this.buildSaleCommand(FUNCTION_CODE_MULTICODE_SALE_REQUEST, amount, ticket, sendVoucher, sendStatus, commerceCode);
+    multicodeSale(
+        amount,
+        ticket,
+        commerceCode,
+        sendVoucher = false,
+        sendStatus = false,
+        callback = null
+    ) {
+        const command = this.buildSaleCommand(
+            FUNCTION_CODE_MULTICODE_SALE_REQUEST,
+            amount,
+            ticket,
+            sendVoucher,
+            sendStatus,
+            commerceCode
+        );
         return this.send(command, true, callback).then((data) => {
-            return this.multicodeSaleResponse(data)
-        })
+            return this.multicodeSaleResponse(data);
+        });
     }
 
     getLastSale(sendVoucher = false) {
-        let voucher = sendVoucher ? "1" : "0"
+        let voucher = sendVoucher ? "1" : "0";
         return this.send(`0250|${voucher}`).then((data) => {
             try {
-                return this.saleResponse(data)
+                return this.saleResponse(data);
             } catch (e) {
-                throw new Error(e.getMessage())
+                throw new Error(e.getMessage());
             }
-        })
+        });
     }
 
     refund() {
         return this.send(`1200`).then((data) => {
-            let chunks = data.split("|")
+            let chunks = data.split("|");
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
                 responseCode: Number.parseInt(chunks[1]),
                 commerceCode: Number.parseInt(chunks[2]),
                 terminalId: chunks[3],
@@ -71,14 +102,14 @@ module.exports = class POSAutoservicio extends POSBase {
                 operationId: chunks[5],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
                 successful: Number.parseInt(chunks[1]) === 0
-            }
-        })
+            };
+        });
     }
 
     closeDay(sendVoucher = false) {
-        let voucher = sendVoucher ? "1" : "0"
+        let voucher = sendVoucher ? "1" : "0";
         return this.send(`0500|${voucher}`).then((data) => {
-            let chunks = data.split("|")
+            let chunks = data.split("|");
             return {
                 functionCode: Number.parseInt(chunks[0]),
                 responseCode: Number.parseInt(chunks[1]),
@@ -87,12 +118,12 @@ module.exports = class POSAutoservicio extends POSBase {
                 voucher: chunks[4]?.match(/.{1,40}/g),
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
                 successful: Number.parseInt(chunks[1]) === 0
-            }
-        })
+            };
+        });
     }
 
     initialization() {
-        return this.send("0070", false)
+        return this.send("0070", false);
     }
 
     /*
@@ -103,36 +134,39 @@ module.exports = class POSAutoservicio extends POSBase {
 
     initializationResponse() {
         return this.send("0080").then((data) => {
-            let chunks = data.split("|")
+            let chunks = data.split("|");
             return {
                 functionCode: Number.parseInt(chunks[0]),
                 responseCode: Number.parseInt(chunks[1]),
-                transactionDate: Number.parseInt(chunks[2]),
+                transactionDate: chunks[2],
                 transactionTime: chunks[3],
                 responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: Number.parseInt(chunks[1])===0
-            }
-        })
+                successful:
+                    Number.parseInt(chunks[1]) ===
+                    SUCCESSFUL_INITIALIZATION_CODE
+            };
+        });
     }
 
     saleResponse(payload) {
-        let chunks = payload.split("|")
+        let chunks = payload.split("|");
         const responseCode = Number.parseInt(chunks[1]);
         const successful = responseCode === 0;
 
         if (!successful) {
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
                 successful: successful
             };
         }
 
-        let authorizationCode = chunks[5] === undefined ? null : chunks[5].trim();
+        let authorizationCode =
+            chunks[5] === undefined ? null : chunks[5].trim();
 
         let response = {
-            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
+            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
             commerceCode: Number.parseInt(chunks[2]),
@@ -150,10 +184,10 @@ module.exports = class POSAutoservicio extends POSBase {
             realDate: chunks[13],
             realTime: chunks[14],
             voucher: chunks[15]?.match(/.{1,40}/g),
-            shareType: chunks[16],
+            sharesType: chunks[16],
             sharesNumber: chunks[17],
             sharesAmount: chunks[18],
-            sharesTypeComment: chunks[19]
+            sharesTypeGloss: chunks[19]
         };
         return response;
     }
@@ -165,16 +199,17 @@ module.exports = class POSAutoservicio extends POSBase {
 
         if (!successful) {
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
+                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
                 successful: successful
             };
         }
-        let authorizationCode = chunks[5] === undefined ? null : chunks[5].trim();
+        let authorizationCode =
+            chunks[5] === undefined ? null : chunks[5].trim();
 
         return {
-            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, '')),
+            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
             successful: successful,
@@ -191,12 +226,12 @@ module.exports = class POSAutoservicio extends POSBase {
             cardBrand: chunks[12],
             realDate: chunks[13],
             realTime: chunks[14],
-            printingField: chunks[15]?.match(/.{1,40}/g) ?? null,
-            sharesType: chunks[16] ?? null,
-            sharesNumber: chunks[17] ?? null,
-            sharesAmount: chunks[18] ?? null,
-            sharesTypeGloss: chunks[19] ?? null
+            lenderCommerceCode: Number.parseInt(chunks[15]),
+            printingField: chunks[16]?.match(/.{1,40}/g) ?? null,
+            sharesType: chunks[17] ?? null,
+            sharesNumber: chunks[18] ?? null,
+            sharesAmount: chunks[19] ?? null,
+            sharesTypeGloss: chunks[20] ?? null
         };
     }
-
-}
+};

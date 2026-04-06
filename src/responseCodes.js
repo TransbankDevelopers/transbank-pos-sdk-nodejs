@@ -51,7 +51,8 @@ module.exports = {
     86: "Ingreso de cuotas",
     87: "Confirmacion de cuotas",
     88: "Error Cantidad Cuotas",
+    90: "Inicialización exitosa",
     93: "Declinada",
     94: "Error al Procesar Respuesta",
     95: "Error al Imprimir TASA"
-}
+};
