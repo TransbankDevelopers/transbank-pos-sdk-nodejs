@@ -8,6 +8,16 @@ const EXIT_CODE = 3;
 let pos;
 let selectedPosType;
 
+const COMMON_POS_OPERATION_CHOICES = [
+    { name: "Poll", value: "poll" },
+    { name: "Carga de llaves", value: "loadKey" },
+    { name: "Obtener última venta", value: "getLastSale" },
+    { name: "Realizar una venta", value: "sale" },
+    { name: "Realizar una venta multicódigo", value: "multicodeSale" },
+    { name: "Realizar una devolución", value: "refund" },
+    { name: "Cerrar sesión POS", value: "close" }
+];
+
 const askYesNo = async function (message) {
     return select({
         message,
@@ -85,32 +95,20 @@ const showPosTypeMenu = async function () {
 const getOperationsByPosType = function (posType) {
     if (posType === "integrado") {
         return [
-            { name: "Poll", value: "poll" },
-            { name: "Carga de llaves", value: "loadKey" },
+            ...COMMON_POS_OPERATION_CHOICES,
             { name: "Cambiar a modo normal", value: "changeToNormalMode" },
-            { name: "Obtener última venta", value: "getLastSale" },
             { name: "Obtener totales", value: "getTotals" },
-            { name: "Realizar una venta", value: "sale" },
-            { name: "Realizar una venta multicódigo", value: "multicodeSale" },
-            { name: "Realizar una devolución", value: "refund" },
-            { name: "Ver detalle de ventas", value: "salesDetail" },
-            { name: "Cerrar sesión POS", value: "close" }
+            { name: "Ver detalle de ventas", value: "salesDetail" }
         ];
     }
 
     return [
-        { name: "Poll", value: "poll" },
-        { name: "Carga de llaves", value: "loadKey" },
+        ...COMMON_POS_OPERATION_CHOICES,
         { name: "Inicializar POS", value: "initialization" },
         {
             name: "Respuesta de inicialización",
             value: "initializationResponse"
-        },
-        { name: "Obtener última venta", value: "getLastSale" },
-        { name: "Realizar una venta", value: "sale" },
-        { name: "Realizar una venta multicódigo", value: "multicodeSale" },
-        { name: "Realizar una devolución", value: "refund" },
-        { name: "Cerrar sesión POS", value: "close" }
+        }
     ];
 };
 
