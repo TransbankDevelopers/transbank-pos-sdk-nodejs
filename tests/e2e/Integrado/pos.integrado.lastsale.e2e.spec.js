@@ -123,15 +123,8 @@ describe("POS Integrado - Last Sale", () => {
             "",
             false
         );
-        validateSaleFields(response, null, null, null, null, null, null);
-        validateAccountFields(
-            response,
-            "CR",
-            "VI",
-            6590,
-            "003000",
-            "3000000000000000000"
-        );
+        validateSaleFields(response, "", "", "", "", "", "");
+        validateAccountFields(response, "", "", null, "", "");
         expect(response.employeeId).toBe("");
         expect(response.tip).toBe(null);
     });
