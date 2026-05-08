@@ -55,7 +55,7 @@ describe("POS Integrado - Details", () => {
             firstSale,
             "ABC123",
             "708410",
-            8000,
+            "8000",
             "000143",
             "07042026",
             "085034"
@@ -68,8 +68,8 @@ describe("POS Integrado - Details", () => {
             "000000",
             "  ********331      "
         );
-        expect(firstSale.feeAmount).toBe(0);
-        expect(firstSale.feeNumber).toBe(0);
+        expect(firstSale.feeAmount).toBe("0");
+        expect(firstSale.feeNumber).toBe("0");
     });
 
     it("parse details response when print on pos is enabled", async () => {
