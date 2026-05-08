@@ -16,73 +16,71 @@ const createConnectedPos = async (createPos) => {
     return pos;
 };
 
-const describePosBaseTests = ({ productName, createPos }) => {
-    describe(`${productName} - Base operations`, () => {
-        describe("Poll", () => {
-            it("checks connection with successful result", async () => {
-                const pos = await createConnectedPos(createPos);
+const describePosBaseTests = ({ createPos }) => {
+    describe("Poll", () => {
+        it("checks connection with successful result", async () => {
+            const pos = await createConnectedPos(createPos);
 
-                const pollPromise = pos.poll();
-                const sentMessage = await captureSend(pos);
-                await sendReply(pos, ACK_BYTE);
-                const response = await pollPromise;
+            const pollPromise = pos.poll();
+            const sentMessage = await captureSend(pos);
+            await sendReply(pos, ACK_BYTE);
+            const response = await pollPromise;
 
-                expect(sentMessage).toEqual(buildMessage("0100"));
-                expect(response).toBe(true);
-            });
+            expect(sentMessage).toEqual(buildMessage("0100"));
+            expect(response).toBe(true);
+        });
 
-            it("checks connection with error result", async () => {
-                const pos = createPos();
+        it("checks connection with error result", async () => {
+            const pos = createPos();
 
-                await expect(pos.poll()).rejects.toThrow(
-                    "You have to connect to a POS"
-                );
+            await expect(pos.poll()).rejects.toThrow(
+                "You have to connect to a POS"
+            );
+        });
+    });
+
+    describe("Load keys", () => {
+        it("loads keys successfully and parses the response", async () => {
+            const pos = await createConnectedPos(createPos);
+            const loadKeysPromise = pos.loadKeys();
+            const sentMessage = await captureSend(pos);
+            await sendReply(pos, ACK_BYTE);
+            await sendReply(
+                pos,
+                `0810|00|${COMMERCE_CODE}|${TERMINAL_ID}`
+            );
+            const response = await loadKeysPromise;
+
+            expect(sentMessage).toEqual(buildMessage("0800"));
+            expectResponseFields(response, {
+                functionCode: 810,
+                responseCode: 0,
+                commerceCode: COMMERCE_CODE,
+                terminalId: TERMINAL_ID,
+                responseMessage: "Aprobado",
+                successful: true
             });
         });
 
-        describe("Load keys", () => {
-            it("loads keys successfully and parses the response", async () => {
-                const pos = await createConnectedPos(createPos);
-                const loadKeysPromise = pos.loadKeys();
-                const sentMessage = await captureSend(pos);
-                await sendReply(pos, ACK_BYTE);
-                await sendReply(
-                    pos,
-                    `0810|00|${COMMERCE_CODE}|${TERMINAL_ID}`
-                );
-                const response = await loadKeysPromise;
+        it("loads keys with error and parses the response", async () => {
+            const pos = await createConnectedPos(createPos);
+            const loadKeysPromise = pos.loadKeys();
+            const sentMessage = await captureSend(pos);
+            await sendReply(pos, ACK_BYTE);
+            await sendReply(
+                pos,
+                `0810|01|${COMMERCE_CODE}|${TERMINAL_ID}`
+            );
+            const response = await loadKeysPromise;
 
-                expect(sentMessage).toEqual(buildMessage("0800"));
-                expectResponseFields(response, {
-                    functionCode: 810,
-                    responseCode: 0,
-                    commerceCode: COMMERCE_CODE,
-                    terminalId: TERMINAL_ID,
-                    responseMessage: "Aprobado",
-                    successful: true
-                });
-            });
-
-            it("loads keys with error and parses the response", async () => {
-                const pos = await createConnectedPos(createPos);
-                const loadKeysPromise = pos.loadKeys();
-                const sentMessage = await captureSend(pos);
-                await sendReply(pos, ACK_BYTE);
-                await sendReply(
-                    pos,
-                    `0810|01|${COMMERCE_CODE}|${TERMINAL_ID}`
-                );
-                const response = await loadKeysPromise;
-
-                expect(sentMessage).toEqual(buildMessage("0800"));
-                expectResponseFields(response, {
-                    functionCode: 810,
-                    responseCode: 1,
-                    commerceCode: COMMERCE_CODE,
-                    terminalId: TERMINAL_ID,
-                    responseMessage: "Rechazado",
-                    successful: false
-                });
+            expect(sentMessage).toEqual(buildMessage("0800"));
+            expectResponseFields(response, {
+                functionCode: 810,
+                responseCode: 1,
+                commerceCode: COMMERCE_CODE,
+                terminalId: TERMINAL_ID,
+                responseMessage: "Rechazado",
+                successful: false
             });
         });
     });

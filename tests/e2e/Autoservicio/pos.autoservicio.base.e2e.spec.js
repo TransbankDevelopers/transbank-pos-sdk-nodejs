@@ -5,7 +5,6 @@ describe("POS Autoservicio - POSBase", () => {
     const suite = setupSuiteContext();
 
     describePosBaseTests({
-        productName: "POS Autoservicio",
         createPos: () => suite.createAutoservicio()
     });
 });
