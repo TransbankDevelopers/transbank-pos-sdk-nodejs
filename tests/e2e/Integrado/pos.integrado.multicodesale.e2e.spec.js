@@ -44,6 +44,23 @@ const multiCodeSaleCreditWithoutVoucherResponsePayload =
 const multiCodeSaleCancelledResponsePayload =
     "0271|07|||ABC123||90000|||||||||||||||597029414303|";
 
+const debitVoucherExpectedLines = [
+    "               TRANSBANK                ",
+    "         VENTA - COPIA COMERCIO         ",
+    "OPERACION: 000143   AUTORIZACION: 708410",
+    "               TRANSBANK                ",
+    "         VENTA - COPIA CLIENTE          "
+];
+
+const creditVoucherExpectedLines = [
+    "               TRANSBANK                ",
+    "     VENTA CON PIN - COPIA COMERCIO     ",
+    "                                        ",
+    "               TRANSBANK                ",
+    "     VENTA CON PIN - COPIA CLIENTE      ",
+    "OPERACION: 000141   AUTORIZACION: 794160"
+];
+
 describe("POS Integrado - Debit multicode sale transaction", () => {
     const suite = setupSuiteContext();
 
@@ -60,18 +77,11 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
         await sendReply(pos, ACK_BYTE);
         await sendReply(pos, multiCodeSaleDebitWithVoucherResponsePayload);
         const response = await salePromise;
-        const expectedVoucherLines = [
-            "               TRANSBANK                ",
-            "         VENTA - COPIA COMERCIO         ",
-            "OPERACION: 000143   AUTORIZACION: 708410",
-            "               TRANSBANK                ",
-            "         VENTA - COPIA CLIENTE          "
-        ];
 
         expect(sentMessage).toEqual(
             buildMessage("0270|8000|ABC123||1|0|597029414303|")
         );
-        validateVoucherContent(response.voucher, expectedVoucherLines);
+        validateVoucherContent(response.voucher, debitVoucherExpectedLines);
         validateBaseSaleFields(
             response,
             271,
@@ -191,16 +201,8 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
         await sendReply(pos, ACK_BYTE);
         await sendReply(pos, multiCodeSaleCreditWithVoucherResponsePayload);
         const response = await salePromise;
-        const expectedVoucherLines = [
-            "               TRANSBANK                ",
-            "     VENTA CON PIN - COPIA COMERCIO     ",
-            "                                        ",
-            "               TRANSBANK                ",
-            "     VENTA CON PIN - COPIA CLIENTE      ",
-            "OPERACION: 000141   AUTORIZACION: 794160"
-        ];
 
-        validateVoucherContent(response.voucher, expectedVoucherLines);
+        validateVoucherContent(response.voucher, creditVoucherExpectedLines);
         validateBaseSaleFields(
             response,
             271,
