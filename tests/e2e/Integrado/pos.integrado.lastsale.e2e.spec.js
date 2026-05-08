@@ -18,7 +18,7 @@ const createConnectedPos = async (suite) => {
     return pos;
 };
 
-describe("POS Integrado - Last Sale", () => {
+describe("POS Integrado - Last Sale with transactions", () => {
     const suite = setupSuiteContext();
 
     it("Last sale - Debit last sale", async () => {
@@ -104,6 +104,10 @@ describe("POS Integrado - Last Sale", () => {
         expect(response.employeeId).toBe("");
         expect(response.tip).toBe(null);
     });
+});
+
+describe("POS Integrado - Last Sale without transactions", () => {
+    const suite = setupSuiteContext();
 
     it("Last sale - No existing sale", async () => {
         const pos = await createConnectedPos(suite);
