@@ -1,19 +1,19 @@
 const {
-    parseString,
+    normalizeEmptyField,
     parseNumber
 } = require("../../../src/helpers/fieldParser");
 
-describe("parseString", () => {
+describe("normalizeEmptyField", () => {
     it("returns null when value is missing or empty", () => {
-        expect(parseString(undefined)).toBeNull();
-        expect(parseString(null)).toBeNull();
-        expect(parseString("")).toBeNull();
+        expect(normalizeEmptyField(undefined)).toBeNull();
+        expect(normalizeEmptyField(null)).toBeNull();
+        expect(normalizeEmptyField("")).toBeNull();
     });
 
     it("returns string values without trimming spaces", () => {
-        expect(parseString("ABC123")).toBe("ABC123");
-        expect(parseString("  ********331      ")).toBe("  ********331      ");
-        expect(parseString("P ")).toBe("P ");
+        expect(normalizeEmptyField("ABC123")).toBe("ABC123");
+        expect(normalizeEmptyField("  ********331      ")).toBe("  ********331      ");
+        expect(normalizeEmptyField("P ")).toBe("P ");
     });
 });
 

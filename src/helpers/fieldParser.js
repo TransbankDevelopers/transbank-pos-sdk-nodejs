@@ -1,6 +1,6 @@
 const INTEGER_PATTERN = /^-?\d+$/;
 
-const parseString = (value) => {
+const normalizeEmptyField = (value) => {
     if (value === undefined || value === null || value === "") {
         return null;
     }
@@ -9,7 +9,7 @@ const parseString = (value) => {
 };
 
 const parseNumber = (value) => {
-    const parsedValue = parseString(value);
+    const parsedValue = normalizeEmptyField(value);
 
     if (parsedValue === null) {
         return null;
@@ -25,6 +25,6 @@ const parseNumber = (value) => {
 };
 
 module.exports = {
-    parseString,
+    normalizeEmptyField,
     parseNumber
 };
