@@ -35,7 +35,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,
-            260,
+            "0260",
             0,
             "Aprobado",
             597029414300,
@@ -47,7 +47,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "ABC123",
             "875395",
             1000,
-            "000140",
+            140,
             "03032026",
             "093106"
         );
@@ -59,7 +59,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "000000",
             "  ********331      "
         );
-        expect(response.employeeId).toBe("");
+        expect(response.employeeId).toBe(null);
         expect(response.tip).toBe(null);
     });
 
@@ -77,7 +77,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,
-            260,
+            "0260",
             0,
             "Aprobado",
             597029414300,
@@ -89,7 +89,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "ABC123",
             "794160",
             12000,
-            "000141",
+            141,
             "06042026",
             "234109"
         );
@@ -101,7 +101,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "003000",
             "3000000000000000000"
         );
-        expect(response.employeeId).toBe("");
+        expect(response.employeeId).toBe(null);
         expect(response.tip).toBe(null);
     });
 });
@@ -120,16 +120,16 @@ describe("POS Integrado - Last Sale without transactions", () => {
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,
-            260,
+            "0260",
             11,
             "No existe venta",
             null,
-            "",
+            null,
             false
         );
-        validateSaleFields(response, "", "", "", "", "", "");
-        validateAccountFields(response, "", "", null, "", "");
-        expect(response.employeeId).toBe("");
+        validateSaleFields(response, null, null, null, null, null, null);
+        validateAccountFields(response, null, null, null, null, null);
+        expect(response.employeeId).toBe(null);
         expect(response.tip).toBe(null);
     });
 });
