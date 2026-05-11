@@ -1,7 +1,7 @@
 const INTEGER_PATTERN = /^-?\d+$/;
 
 const parseString = (value) => {
-    if (typeof value === "undefined" || value === null || value === "") {
+    if (value === undefined || value === null || value === "") {
         return null;
     }
 
