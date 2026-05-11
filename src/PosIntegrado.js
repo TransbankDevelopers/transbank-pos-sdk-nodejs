@@ -1,7 +1,9 @@
 const POSBase = require('./PosBase');
+const { normalizeEmptyField, parseNumber } = require("./helpers/fieldParser");
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = '0270';
 const FUNCTION_CODE_SALE_REQUEST = '0200';
 const CONSECUTIVE_EMPTY_AUTHCODE_LIMIT = 2;
+const SUCCESSFUL_RESPONSE_CODE = 0;
 
 module.exports = class POSIntegrado extends POSBase {
 
@@ -38,7 +40,7 @@ module.exports = class POSIntegrado extends POSBase {
     getLastSale() {
         return this.send("0250|").then((data) => {
             try {
-                return this.saleResponse(data)
+                return this.lastSaleResponse(data)
             } catch (e) {
                 throw new Error(e.getMessage())
             }
@@ -268,6 +270,35 @@ module.exports = class POSIntegrado extends POSBase {
         }
 
         return response
+    }
+
+    lastSaleResponse(payload) {
+        const chunks = payload.split("|");
+        const responseCode = parseNumber(chunks[1]);
+
+        return {
+            functionCode: normalizeEmptyField(chunks[0]),
+            responseCode: responseCode,
+            commerceCode: parseNumber(chunks[2]),
+            terminalId: normalizeEmptyField(chunks[3]),
+            responseMessage: this.getResponseMessage(responseCode),
+            successful: responseCode === SUCCESSFUL_RESPONSE_CODE,
+            ticket: normalizeEmptyField(chunks[4]),
+            authorizationCode: normalizeEmptyField(chunks[5]),
+            amount: parseNumber(chunks[6]),
+            installmentsNumber: parseNumber(chunks[7]),
+            installmentsAmount: parseNumber(chunks[8]),
+            last4Digits: parseNumber(chunks[9]),
+            operationNumber: parseNumber(chunks[10]),
+            cardType: normalizeEmptyField(chunks[11]),
+            accountingDate: normalizeEmptyField(chunks[12]),
+            accountNumber: normalizeEmptyField(chunks[13]),
+            cardBrand: normalizeEmptyField(chunks[14]),
+            realDate: normalizeEmptyField(chunks[15]),
+            realTime: normalizeEmptyField(chunks[16]),
+            employeeId: parseNumber(chunks[17]),
+            tip: parseNumber(chunks[18])
+        };
     }
 
 }
