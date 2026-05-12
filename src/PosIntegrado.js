@@ -174,29 +174,30 @@ module.exports = class POSIntegrado extends POSBase {
 
      saleDetailResponse(payload) {
         let chunks = payload.split("|")
-        let authorizationCode = typeof chunks[5] !== 'undefined' ? chunks[5].trim() : null;
+        const responseCode = parseNumber(chunks[1]);
+
         return {
-            functionCode: Number.parseInt(chunks[0]),
-            responseCode: Number.parseInt(chunks[1]),
-            commerceCode: Number.parseInt(chunks[2]),
-            terminalId: chunks[3],
-            responseMessage: this.getResponseMessage (Number.parseInt(chunks[1])),
-            successful: Number.parseInt(chunks[1])===0,
-            ticket: chunks[4],
-            authorizationCode: authorizationCode,
-            amount: chunks[6],
-            last4Digits: Number.parseInt(chunks[7]),
-            operationNumber: chunks[8],
-            cardType: chunks[9],
-            accountingDate: chunks[10],
-            accountNumber: chunks[11],
-            cardBrand: chunks[12],
-            realDate: chunks[13],
-            realTime: chunks[14],
-            employeeId: chunks[15],
-            tip: Number.parseInt(chunks[16]),
-            feeAmount: (chunks[16]),
-            feeNumber: (chunks[17])
+            functionCode: normalizeEmptyField(chunks[0]),
+            responseCode: parseNumber(chunks[1]),
+            commerceCode: parseNumber(chunks[2]),
+            terminalId: normalizeEmptyField(chunks[3]),
+            responseMessage: this.getResponseMessage(responseCode),
+            successful: responseCode === SUCCESSFUL_RESPONSE_CODE,
+            ticket: normalizeEmptyField(chunks[4]),
+            authorizationCode: normalizeEmptyField(chunks[5]),
+            amount: parseNumber(chunks[6]),
+            last4Digits: parseNumber(chunks[7]),
+            operationNumber: parseNumber(chunks[8]),
+            cardType: normalizeEmptyField(chunks[9]),
+            accountingDate: normalizeEmptyField(chunks[10]),
+            accountNumber: normalizeEmptyField(chunks[11]),
+            cardBrand: normalizeEmptyField(chunks[12]),
+            realDate: normalizeEmptyField(chunks[13]),
+            realTime: normalizeEmptyField(chunks[14]),
+            employeeId: parseNumber(chunks[15]),
+            tip: parseNumber(chunks[16]),
+            installmentsAmount: parseNumber(chunks[17]),
+            installmentsNumber: parseNumber(chunks[18])
         }
     }
 

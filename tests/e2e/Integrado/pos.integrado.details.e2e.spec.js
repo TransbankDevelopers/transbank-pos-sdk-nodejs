@@ -44,7 +44,7 @@ describe("POS Integrado - Details", () => {
         const firstSale = response[0];
         validateBaseSaleFields(
             firstSale,
-            261,
+            "0261",
             0,
             "Aprobado",
             597029414300,
@@ -55,8 +55,8 @@ describe("POS Integrado - Details", () => {
             firstSale,
             "ABC123",
             "708410",
-            "8000",
-            "000143",
+            8000,
+            143,
             "07042026",
             "085034"
         );
@@ -68,8 +68,8 @@ describe("POS Integrado - Details", () => {
             "000000",
             "  ********331      "
         );
-        expect(firstSale.feeAmount).toBe("0");
-        expect(firstSale.feeNumber).toBe("0");
+        expect(firstSale.installmentsAmount).toBe(0);
+        expect(firstSale.installmentsNumber).toBe(0);
     });
 
     it("parse details response when print on pos is enabled", async () => {
