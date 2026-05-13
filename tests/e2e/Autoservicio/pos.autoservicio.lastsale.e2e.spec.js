@@ -7,7 +7,7 @@ const {
     connectWithPollAck
 } = require("../helpers/mockPos");
 
-const { 
+const {
     validateBaseSaleFields,
     validateSaleFields,
     validateSharesFields,
@@ -18,21 +18,21 @@ const {
 const {
     lastSaleDebitVoucher,
     lastSaleCreditVoucher
- } = require("../helpers/autoservicioVoucherFixtures");
+} = require("../helpers/autoservicioVoucherFixtures");
 
 const createConnectedPos = async (suite) => {
     const pos = suite.createAutoservicio();
     await connectWithPollAck(pos);
     return pos;
-}
+};
 
 const lastSaleDebitWithVoucherResponsePayload =
-            "0260|00|597029414303|IM750164|123456|912108|1000|3331|68|DB|00-00-00|331|P |19032026|102438|" +
-            lastSaleDebitVoucher;
+    "0260|00|597029414303|IM750164|123456|912108|1000|3331|68|DB|00-00-00|331|P |19032026|102438|" +
+    lastSaleDebitVoucher;
 const lastSaleCreditWithVoucherResponsePayload =
-            "0260|00|597029414300|IM750164|123456|575354|10000|6590|34|CR|||VI|17032026|115006|" +
-            lastSaleCreditVoucher +
-            "|03|03|3334|CUOTAS SIN INTERES";
+    "0260|00|597029414300|IM750164|123456|575354|10000|6590|34|CR|||VI|17032026|115006|" +
+    lastSaleCreditVoucher +
+    "|03|03|3334|CUOTAS SIN INTERES";
 
 describe("POS Autoservicio - Debit last sale", () => {
     const suite = setupSuiteContext();
@@ -43,13 +43,33 @@ describe("POS Autoservicio - Debit last sale", () => {
         const lastSalePromise = pos.getLastSale();
         const sentMessage = await captureSend(pos);
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "0260|00|597029414300|IM750164|123456|574062|1000|3331|56|DB|10032026|331|P |12032026|171142");
+        await sendReply(
+            pos,
+            "0260|00|597029414300|IM750164|123456|574062|1000|3331|56|DB|10032026|331|P |12032026|171142"
+        );
         const response = await lastSalePromise;
 
         expect(sentMessage).toEqual(buildMessage("0250|0"));
-        expect(response.voucher).toBeUndefined();
-        validateBaseSaleFields(response, 260, 0, "Aprobado", 597029414300, "IM750164", true);
-        validateSaleFields(response, "123456", "574062", 1000, "56", "12032026", "171142");
+        expect(response.printingField).toBeNull();
+        expect(response.rawVoucher).toBeNull();
+        validateBaseSaleFields(
+            response,
+            "0260",
+            0,
+            "Aprobado",
+            597029414300,
+            "IM750164",
+            true
+        );
+        validateSaleFields(
+            response,
+            "123456",
+            "574062",
+            1000,
+            56,
+            "12032026",
+            "171142"
+        );
         validateAccountFields(response, "DB", "P ", 3331, "10032026", "331");
     });
 
@@ -70,12 +90,27 @@ describe("POS Autoservicio - Debit last sale", () => {
         ];
 
         expect(sentMessage).toEqual(buildMessage("0250|1"));
-        validateVoucherContent(response.voucher, expectedVoucherLines);
-        validateBaseSaleFields(response, 260, 0, "Aprobado", 597029414303, "IM750164", true);
-        validateSaleFields(response, "123456", "912108", 1000, "68", "19032026", "102438");
+        validateVoucherContent(response.printingField, expectedVoucherLines);
+        validateBaseSaleFields(
+            response,
+            "0260",
+            0,
+            "Aprobado",
+            597029414303,
+            "IM750164",
+            true
+        );
+        validateSaleFields(
+            response,
+            "123456",
+            "912108",
+            1000,
+            68,
+            "19032026",
+            "102438"
+        );
         validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
     });
-
 });
 
 describe("POS Autoservicio - Credit last sale", () => {
@@ -99,11 +134,27 @@ describe("POS Autoservicio - Credit last sale", () => {
         ];
 
         expect(sentMessage).toEqual(buildMessage("0250|1"));
-        validateVoucherContent(response.voucher, expectedVoucherLines);
-        validateBaseSaleFields(response, 260, 0, "Aprobado", 597029414300, "IM750164", true);
-        validateSaleFields(response, "123456", "575354", 10000, "34", "17032026", "115006");
-        validateAccountFields(response, "CR", "VI", 6590, "", "");
-        validateSharesFields(response, "03", "03", "3334", "CUOTAS SIN INTERES");
+        validateVoucherContent(response.printingField, expectedVoucherLines);
+        validateBaseSaleFields(
+            response,
+            "0260",
+            0,
+            "Aprobado",
+            597029414300,
+            "IM750164",
+            true
+        );
+        validateSaleFields(
+            response,
+            "123456",
+            "575354",
+            10000,
+            34,
+            "17032026",
+            "115006"
+        );
+        validateAccountFields(response, "CR", "VI", 6590, null, null);
+        validateSharesFields(response, 3, 3, 3334, "CUOTAS SIN INTERES");
     });
 
     it("last sale - approved credit without voucher", async () => {
@@ -111,15 +162,35 @@ describe("POS Autoservicio - Credit last sale", () => {
 
         const lastSalePromise = pos.getLastSale();
         const sentMessage = await captureSend(pos);
+        const posResponse =
+            "0260|00|597029414300|IM750164|123456|575354|10000|6590|34|CR|||VI|17032026|115006||03|03|3334|CUOTAS SIN INTERES";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "0260|00|597029414300|IM750164|123456|575354|10000|6590|34|CR|||VI|17032026|115006||03|03|3334|CUOTAS SIN INTERES");
+        await sendReply(pos, posResponse);
         const response = await lastSalePromise;
 
         expect(sentMessage).toEqual(buildMessage("0250|0"));
-        expect(response.voucher).toBeNull();
-        validateBaseSaleFields(response, 260, 0, "Aprobado", 597029414300, "IM750164", true);
-        validateSaleFields(response, "123456", "575354", 10000, "34", "17032026", "115006");
-        validateAccountFields(response, "CR", "VI", 6590, "", "");
-        validateSharesFields(response, "03", "03", "3334", "CUOTAS SIN INTERES");
+        expect(response.printingField).toBeNull();
+        expect(response.rawVoucher).toBeNull();
+        expect(response.rawResponse).toEqual(posResponse);
+        validateBaseSaleFields(
+            response,
+            "0260",
+            0,
+            "Aprobado",
+            597029414300,
+            "IM750164",
+            true
+        );
+        validateSaleFields(
+            response,
+            "123456",
+            "575354",
+            10000,
+            34,
+            "17032026",
+            "115006"
+        );
+        validateAccountFields(response, "CR", "VI", 6590, null, null);
+        validateSharesFields(response, 3, 3, 3334, "CUOTAS SIN INTERES");
     });
 });
