@@ -44,21 +44,20 @@ const describePosBaseTests = ({ createPos }) => {
             const pos = await createConnectedPos(createPos);
             const loadKeysPromise = pos.loadKeys();
             const sentMessage = await captureSend(pos);
+            const posReply = `0810|00|${COMMERCE_CODE}|${TERMINAL_ID}`;
             await sendReply(pos, ACK_BYTE);
-            await sendReply(
-                pos,
-                `0810|00|${COMMERCE_CODE}|${TERMINAL_ID}`
-            );
+            await sendReply(pos, posReply);
             const response = await loadKeysPromise;
 
             expect(sentMessage).toEqual(buildMessage("0800"));
             expectResponseFields(response, {
-                functionCode: 810,
+                functionCode: "0810",
                 responseCode: 0,
                 commerceCode: COMMERCE_CODE,
                 terminalId: TERMINAL_ID,
                 responseMessage: "Aprobado",
-                successful: true
+                success: true,
+                rawResponse: posReply
             });
         });
 
@@ -66,21 +65,20 @@ const describePosBaseTests = ({ createPos }) => {
             const pos = await createConnectedPos(createPos);
             const loadKeysPromise = pos.loadKeys();
             const sentMessage = await captureSend(pos);
+            const posReply = `0810|01|${COMMERCE_CODE}|${TERMINAL_ID}`;
             await sendReply(pos, ACK_BYTE);
-            await sendReply(
-                pos,
-                `0810|01|${COMMERCE_CODE}|${TERMINAL_ID}`
-            );
+            await sendReply(pos, posReply);
             const response = await loadKeysPromise;
 
             expect(sentMessage).toEqual(buildMessage("0800"));
             expectResponseFields(response, {
-                functionCode: 810,
+                functionCode: "0810",
                 responseCode: 1,
                 commerceCode: COMMERCE_CODE,
                 terminalId: TERMINAL_ID,
                 responseMessage: "Rechazado",
-                successful: false
+                success: false,
+                rawResponse: posReply
             });
         });
     });
