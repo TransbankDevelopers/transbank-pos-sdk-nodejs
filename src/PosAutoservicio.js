@@ -1,4 +1,5 @@
 const POSBase = require("./PosBase");
+const { normalizeEmptyField, parseNumber } = require("./helpers/fieldParser");
 const FUNCTION_CODE_SALE_REQUEST = "0200";
 const FUNCTION_CODE_MULTICODE_SALE_REQUEST = "0270";
 const SUCCESSFUL_INITIALIZATION_CODE = 90;
@@ -93,15 +94,19 @@ module.exports = class POSAutoservicio extends POSBase {
     refund() {
         return this.send(`1200`).then((data) => {
             let chunks = data.split("|");
+            const responseCode = parseNumber(chunks[1]);
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
-                responseCode: Number.parseInt(chunks[1]),
-                commerceCode: Number.parseInt(chunks[2]),
-                terminalId: chunks[3],
-                authorizationCode: chunks[4].trim(),
-                operationId: chunks[5],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: Number.parseInt(chunks[1]) === 0
+                functionCode: normalizeEmptyField(
+                    chunks[0].replaceAll(/\D+/g, "")
+                ),
+                responseCode: responseCode,
+                commerceCode: parseNumber(chunks[2]),
+                terminalId: normalizeEmptyField(chunks[3]),
+                authorizationCode: normalizeEmptyField(chunks[4].trim()),
+                operationId: normalizeEmptyField(chunks[5]),
+                responseMessage: this.getResponseMessage(responseCode),
+                success: responseCode === 0,
+                rawResponse: normalizeEmptyField(data)
             };
         });
     }
@@ -110,14 +115,17 @@ module.exports = class POSAutoservicio extends POSBase {
         let voucher = sendVoucher ? "1" : "0";
         return this.send(`0500|${voucher}`).then((data) => {
             let chunks = data.split("|");
+            const responseCode = parseNumber(chunks[1]);
             return {
-                functionCode: Number.parseInt(chunks[0]),
-                responseCode: Number.parseInt(chunks[1]),
-                commerceCode: Number.parseInt(chunks[2]),
-                terminalId: chunks[3],
-                voucher: chunks[4]?.match(/.{1,40}/g),
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: Number.parseInt(chunks[1]) === 0
+                functionCode: normalizeEmptyField(chunks[0]),
+                responseCode: responseCode,
+                commerceCode: parseNumber(chunks[2]),
+                terminalId: normalizeEmptyField(chunks[3]),
+                printingField: chunks[4]?.match(/.{1,40}/g),
+                rawVoucher: normalizeEmptyField(chunks[4]),
+                responseMessage: this.getResponseMessage(responseCode),
+                success: responseCode === 0,
+                rawResponse: normalizeEmptyField(data)
             };
         });
     }
@@ -135,103 +143,107 @@ module.exports = class POSAutoservicio extends POSBase {
     initializationResponse() {
         return this.send("0080").then((data) => {
             let chunks = data.split("|");
+            const responseCode = parseNumber(chunks[1]);
             return {
-                functionCode: Number.parseInt(chunks[0]),
-                responseCode: Number.parseInt(chunks[1]),
-                transactionDate: chunks[2],
-                transactionTime: chunks[3],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful:
-                    Number.parseInt(chunks[1]) ===
-                    SUCCESSFUL_INITIALIZATION_CODE
+                functionCode: normalizeEmptyField(chunks[0]),
+                responseCode: responseCode,
+                transactionDate: normalizeEmptyField(chunks[2]),
+                transactionTime: normalizeEmptyField(chunks[3]),
+                responseMessage: this.getResponseMessage(responseCode),
+                success: responseCode === SUCCESSFUL_INITIALIZATION_CODE,
+                rawResponse: normalizeEmptyField(data)
             };
         });
     }
 
     saleResponse(payload) {
         let chunks = payload.split("|");
-        const responseCode = Number.parseInt(chunks[1]);
-        const successful = responseCode === 0;
+        const responseCode = parseNumber(chunks[1]);
+        const success = responseCode === 0;
 
-        if (!successful) {
+        if (!success) {
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
+                functionCode: normalizeEmptyField(
+                    chunks[0].replaceAll(/\D+/g, "")
+                ),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
-                successful: successful
+                success: success,
+                rawResponse: normalizeEmptyField(payload)
             };
         }
 
-        let authorizationCode =
-            chunks[5] === undefined ? null : chunks[5].trim();
-
-        let response = {
-            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
+        return {
+            functionCode: normalizeEmptyField(chunks[0].replaceAll(/\D+/g, "")),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
-            commerceCode: Number.parseInt(chunks[2]),
-            terminalId: chunks[3],
-            successful: successful,
-            ticket: chunks[4],
-            authorizationCode: authorizationCode,
-            amount: Number.parseInt(chunks[6]),
-            last4Digits: chunks[7] ? Number.parseInt(chunks[7]) : null,
-            operationNumber: chunks[8],
-            cardType: chunks[9],
-            accountingDate: chunks[10],
-            accountNumber: chunks[11],
-            cardBrand: chunks[12],
-            realDate: chunks[13],
-            realTime: chunks[14],
-            voucher: chunks[15]?.match(/.{1,40}/g),
-            sharesType: chunks[16],
-            sharesNumber: chunks[17],
-            sharesAmount: chunks[18],
-            sharesTypeGloss: chunks[19]
+            commerceCode: parseNumber(chunks[2]),
+            terminalId: normalizeEmptyField(chunks[3]),
+            success: success,
+            ticket: normalizeEmptyField(chunks[4]),
+            authorizationCode: normalizeEmptyField(chunks[5]),
+            amount: parseNumber(chunks[6]),
+            last4Digits: chunks[7] ? parseNumber(chunks[7]) : null,
+            operationNumber: parseNumber(chunks[8]),
+            cardType: normalizeEmptyField(chunks[9]),
+            accountingDate: normalizeEmptyField(chunks[10]),
+            accountNumber: normalizeEmptyField(chunks[11]),
+            cardBrand: normalizeEmptyField(chunks[12]),
+            realDate: normalizeEmptyField(chunks[13]),
+            realTime: normalizeEmptyField(chunks[14]),
+            printingField: chunks[15]?.match(/.{1,40}/g) ?? null,
+            rawVoucher: normalizeEmptyField(chunks[15]),
+            installmentsType: parseNumber(chunks[16]),
+            installmentsNumber: parseNumber(chunks[17]),
+            installmentsAmount: parseNumber(chunks[18]),
+            InstallmentsTypeDescription: normalizeEmptyField(chunks[19]),
+            rawResponse: normalizeEmptyField(payload)
         };
-        return response;
     }
 
     multicodeSaleResponse(payload) {
         const chunks = payload.split("|");
-        const responseCode = Number.parseInt(chunks[1]);
-        const successful = responseCode === 0;
+        const responseCode = parseNumber(chunks[1]);
+        const success = responseCode === 0;
 
-        if (!successful) {
+        if (!success) {
             return {
-                functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
+                functionCode: normalizeEmptyField(
+                    chunks[0].replaceAll(/\D+/g, "")
+                ),
                 responseCode: responseCode,
                 responseMessage: this.getResponseMessage(responseCode),
-                successful: successful
+                success: success,
+                rawResponse: normalizeEmptyField(payload)
             };
         }
-        let authorizationCode =
-            chunks[5] === undefined ? null : chunks[5].trim();
 
         return {
-            functionCode: Number.parseInt(chunks[0].replaceAll(/\D+/g, "")),
+            functionCode: normalizeEmptyField(chunks[0].replaceAll(/\D+/g, "")),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
-            successful: successful,
-            commerceCode: Number.parseInt(chunks[2]),
-            terminalId: chunks[3],
-            ticket: chunks[4],
-            authorizationCode: authorizationCode,
-            amount: Number.parseInt(chunks[6]),
-            last4Digits: chunks[7] ? Number.parseInt(chunks[7]) : null,
-            operationNumber: chunks[8],
-            cardType: chunks[9],
-            accountingDate: chunks[10],
-            accountNumber: chunks[11],
-            cardBrand: chunks[12],
-            realDate: chunks[13],
-            realTime: chunks[14],
-            lenderCommerceCode: Number.parseInt(chunks[15]),
+            success: success,
+            commerceCode: parseNumber(chunks[2]),
+            terminalId: normalizeEmptyField(chunks[3]),
+            ticket: normalizeEmptyField(chunks[4]),
+            authorizationCode: normalizeEmptyField(chunks[5]),
+            amount: parseNumber(chunks[6]),
+            last4Digits: parseNumber(chunks[7]),
+            operationNumber: parseNumber(chunks[8]),
+            cardType: normalizeEmptyField(chunks[9]),
+            accountingDate: normalizeEmptyField(chunks[10]),
+            accountNumber: normalizeEmptyField(chunks[11]),
+            cardBrand: normalizeEmptyField(chunks[12]),
+            realDate: normalizeEmptyField(chunks[13]),
+            realTime: normalizeEmptyField(chunks[14]),
+            commerceProviderCode: parseNumber(chunks[15]),
             printingField: chunks[16]?.match(/.{1,40}/g) ?? null,
-            sharesType: chunks[17] ?? null,
-            sharesNumber: chunks[18] ?? null,
-            sharesAmount: chunks[19] ?? null,
-            sharesTypeGloss: chunks[20] ?? null
+            rawVoucher: normalizeEmptyField(chunks[16]),
+            installmentsType: parseNumber(chunks[17]),
+            installmentsNumber: parseNumber(chunks[18]),
+            installmentsAmount: parseNumber(chunks[19]),
+            InstallmentsTypeDescription: normalizeEmptyField(chunks[20]),
+            rawResponse: normalizeEmptyField(payload)
         };
     }
 };
