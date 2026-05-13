@@ -58,13 +58,16 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
             "GRACIAS POR SU COMPRA"
         ];
 
+        expect(response.rawResponse).toBe(
+            multiCodeSaleDebitWithVoucherResponsePayload
+        );
         expect(sentMessage).toEqual(
             buildMessage("0270|1000|123456|1|0|597029414303")
         );
         validateVoucherContent(response.printingField, expectedVoucherLines);
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414303,
@@ -76,30 +79,28 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
             "123456",
             "475618",
             1000,
-            "62",
+            62,
             "18032026",
             "171040"
         );
         validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
-        expect(response.lenderCommerceCode).toBe(597012345678);
+        expect(response.commerceProviderCode).toBe(597012345678);
     });
 
     it("performs debit multicode sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
-
+        const posResponse =
+            "0271|00|597029414303|IM750164|123456|673501|1000|3331|63|DB|00-00-00|331|P |18032026|171113|597012345678";
         const salePromise = pos.multicodeSale(1000, "123456", 597029414303);
         const sentMessage = await captureSend(pos);
         await sendReply(pos, ACK_BYTE);
-        await sendReply(
-            pos,
-            "0271|00|597029414303|IM750164|123456|673501|1000|3331|63|DB|00-00-00|331|P |18032026|171113|597012345678"
-        );
+        await sendReply(pos, posResponse);
         const response = await salePromise;
-
+        expect(response.rawResponse).toBe(posResponse);
         expect(response.printingField).toBeNull();
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414303,
@@ -111,7 +112,7 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
             "123456",
             "673501",
             1000,
-            "63",
+            63,
             "18032026",
             "171113"
         );
@@ -119,7 +120,7 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
         expect(sentMessage).toEqual(
             buildMessage("0270|1000|123456|0|0|597029414303")
         );
-        expect(response.lenderCommerceCode).toBe(597012345678);
+        expect(response.commerceProviderCode).toBe(597012345678);
     });
 });
 
@@ -145,11 +146,13 @@ describe("POS Autoservicio - Credit multicode sale transaction", () => {
             "TIPO DE CUOTAS",
             "CUOTAS SIN INTERES"
         ];
-
+        expect(response.rawResponse).toBe(
+            multiCodeSaleCreditWithVoucherResponsePayload
+        );
         validateVoucherContent(response.printingField, expectedVoucherLines);
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414303,
@@ -161,19 +164,13 @@ describe("POS Autoservicio - Credit multicode sale transaction", () => {
             "123456",
             "194937",
             10000,
-            "64",
+            64,
             "18032026",
             "171153"
         );
-        validateAccountFields(response, "CR", "VI", 6590, "", "");
-        validateSharesFields(
-            response,
-            "03",
-            "03",
-            "3334",
-            "CUOTAS SIN INTERES"
-        );
-        expect(response.lenderCommerceCode).toBe(597012345678);
+        validateAccountFields(response, "CR", "VI", 6590, null, null);
+        validateSharesFields(response, 3, 3, 3334, "CUOTAS SIN INTERES");
+        expect(response.commerceProviderCode).toBe(597012345678);
         expect(sentMessage).toEqual(
             buildMessage("0270|10000|123456|1|0|597029414303")
         );
@@ -196,7 +193,7 @@ describe("POS Autoservicio - Credit multicode sale transaction", () => {
         expect(response.printingField).toBeNull();
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414303,
@@ -208,18 +205,12 @@ describe("POS Autoservicio - Credit multicode sale transaction", () => {
             "123456",
             "785992",
             10000,
-            "65",
+            65,
             "18032026",
             "171232"
         );
-        validateAccountFields(response, "CR", "VI", 6590, "", "");
-        validateSharesFields(
-            response,
-            "03",
-            "03",
-            "3334",
-            "CUOTAS SIN INTERES"
-        );
-        expect(response.lenderCommerceCode).toBe(597012345678);
+        validateAccountFields(response, "CR", "VI", 6590, null, null);
+        validateSharesFields(response, 3, 3, 3334, "CUOTAS SIN INTERES");
+        expect(response.commerceProviderCode).toBe(597012345678);
     });
 });
