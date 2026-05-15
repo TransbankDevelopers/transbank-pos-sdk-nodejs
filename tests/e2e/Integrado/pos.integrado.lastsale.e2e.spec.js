@@ -57,7 +57,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
         expect(response.employeeId).toBe(null);
         expect(response.tip).toBe(null);
