@@ -66,7 +66,7 @@ describe("POS Integrado - Details", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
         expect(firstSale.installmentsAmount).toBe(0);
         expect(firstSale.installmentsNumber).toBe(0);
