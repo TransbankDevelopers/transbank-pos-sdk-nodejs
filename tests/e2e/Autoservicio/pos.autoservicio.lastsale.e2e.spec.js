@@ -70,7 +70,7 @@ describe("POS Autoservicio - Debit last sale", () => {
             "12032026",
             "171142"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "10032026", "331");
+        validateAccountFields(response, "DB", "P", 3331, "10032026", "331");
     });
 
     it("last sale - approved debit with voucher", async () => {
@@ -109,7 +109,7 @@ describe("POS Autoservicio - Debit last sale", () => {
             "19032026",
             "102438"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
+        validateAccountFields(response, "DB", "P", 3331, "00-00-00", "331");
     });
 });
 
