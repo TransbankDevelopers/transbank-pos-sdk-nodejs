@@ -80,7 +80,7 @@ describe("POS Autoservicio - Debit sale transaction", () => {
             "18032026",
             "123230"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
+        validateAccountFields(response, "DB", "P", 3331, "00-00-00", "331");
     });
 
     it("performs debit sale and parses approved response without voucher", async () => {
@@ -116,7 +116,7 @@ describe("POS Autoservicio - Debit sale transaction", () => {
             "18032026",
             "123307"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
+        validateAccountFields(response, "DB", "P", 3331, "00-00-00", "331");
     });
 });
 describe("POS Autoservicio - Credit sale transaction", () => {
