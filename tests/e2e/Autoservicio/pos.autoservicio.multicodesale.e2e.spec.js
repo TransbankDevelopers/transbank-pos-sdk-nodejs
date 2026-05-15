@@ -83,7 +83,7 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
             "18032026",
             "171040"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
+        validateAccountFields(response, "DB", "P", 3331, "00-00-00", "331");
         expect(response.commerceProviderCode).toBe(597012345678);
     });
 
@@ -116,7 +116,7 @@ describe("POS Autoservicio - Debit multicode sale transaction", () => {
             "18032026",
             "171113"
         );
-        validateAccountFields(response, "DB", "P ", 3331, "00-00-00", "331");
+        validateAccountFields(response, "DB", "P", 3331, "00-00-00", "331");
         expect(sentMessage).toEqual(
             buildMessage("0270|1000|123456|0|0|597029414303")
         );
