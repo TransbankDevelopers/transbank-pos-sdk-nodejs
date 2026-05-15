@@ -35,7 +35,7 @@ module.exports = class POSIntegrado extends POSBase {
                 terminalId: normalizeEmptyField(chunks[3]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === 0,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -63,7 +63,7 @@ module.exports = class POSIntegrado extends POSBase {
                 txTotal: parseNumber(chunks[3]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === 0,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -149,7 +149,7 @@ module.exports = class POSIntegrado extends POSBase {
                 operationId: parseNumber(chunks[5]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === 0,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -252,7 +252,7 @@ module.exports = class POSIntegrado extends POSBase {
             tip: parseNumber(chunks[16]),
             installmentsAmount: parseNumber(chunks[17]),
             installmentsNumber: parseNumber(chunks[18]),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         };
     }
 
@@ -282,8 +282,8 @@ module.exports = class POSIntegrado extends POSBase {
             employeeId: parseNumber(chunks[17]),
             tip: parseNumber(chunks[18]),
             printingField: chunks[19]?.match(/.{1,40}/g) ?? null,
-            rawVoucher: normalizeEmptyField(chunks[19]),
-            rawResponse: normalizeEmptyField(payload)
+            rawVoucher: normalizeEmptyField(chunks[19], false),
+            rawResponse: normalizeEmptyField(payload, false)
         };
     }
 
@@ -313,10 +313,10 @@ module.exports = class POSIntegrado extends POSBase {
             employeeId: parseNumber(chunks[17]),
             tip: parseNumber(chunks[18]),
             printingField: chunks[19]?.match(/.{1,40}/g) ?? null,
-            rawVoucher: normalizeEmptyField(chunks[19]),
+            rawVoucher: normalizeEmptyField(chunks[19], false),
             change: parseNumber(chunks[20]),
             commerceProviderCode: parseNumber(chunks[21]),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         };
 
         return response;
@@ -348,7 +348,7 @@ module.exports = class POSIntegrado extends POSBase {
             realTime: normalizeEmptyField(chunks[16]),
             employeeId: parseNumber(chunks[17]),
             tip: parseNumber(chunks[18]),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         };
     }
 };

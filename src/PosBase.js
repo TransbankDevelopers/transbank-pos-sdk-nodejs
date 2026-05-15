@@ -350,7 +350,7 @@ module.exports = class POSBase extends EventEmitter {
                 terminalId: normalizeEmptyField(chunks[3]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === SUCCESSFUL_RESPONSE_CODE,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             }
         })
     }
@@ -360,7 +360,7 @@ module.exports = class POSBase extends EventEmitter {
         let response = {
             responseCode: parseNumber(chunks[1]),
             responseMessage: this.getResponseMessage(parseNumber(chunks[1])),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         }
 
         return response;

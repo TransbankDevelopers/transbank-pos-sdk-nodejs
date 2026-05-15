@@ -106,7 +106,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 operationId: normalizeEmptyField(chunks[5]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === 0,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -122,10 +122,10 @@ module.exports = class POSAutoservicio extends POSBase {
                 commerceCode: parseNumber(chunks[2]),
                 terminalId: normalizeEmptyField(chunks[3]),
                 printingField: chunks[4]?.match(/.{1,40}/g),
-                rawVoucher: normalizeEmptyField(chunks[4]),
+                rawVoucher: normalizeEmptyField(chunks[4], false),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === 0,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -151,7 +151,7 @@ module.exports = class POSAutoservicio extends POSBase {
                 transactionTime: normalizeEmptyField(chunks[3]),
                 responseMessage: this.getResponseMessage(responseCode),
                 success: responseCode === SUCCESSFUL_INITIALIZATION_CODE,
-                rawResponse: normalizeEmptyField(data)
+                rawResponse: normalizeEmptyField(data, false)
             };
         });
     }
@@ -179,12 +179,12 @@ module.exports = class POSAutoservicio extends POSBase {
             realDate: normalizeEmptyField(chunks[13]),
             realTime: normalizeEmptyField(chunks[14]),
             printingField: chunks[15]?.match(/.{1,40}/g) ?? null,
-            rawVoucher: normalizeEmptyField(chunks[15]),
+            rawVoucher: normalizeEmptyField(chunks[15], false),
             installmentsType: parseNumber(chunks[16]),
             installmentsNumber: parseNumber(chunks[17]),
             installmentsAmount: parseNumber(chunks[18]),
             installmentsTypeDescription: normalizeEmptyField(chunks[19]),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         };
     }
 
@@ -212,12 +212,12 @@ module.exports = class POSAutoservicio extends POSBase {
             realTime: normalizeEmptyField(chunks[14]),
             commerceProviderCode: parseNumber(chunks[15]),
             printingField: chunks[16]?.match(/.{1,40}/g) ?? null,
-            rawVoucher: normalizeEmptyField(chunks[16]),
+            rawVoucher: normalizeEmptyField(chunks[16], false),
             installmentsType: parseNumber(chunks[17]),
             installmentsNumber: parseNumber(chunks[18]),
             installmentsAmount: parseNumber(chunks[19]),
             installmentsTypeDescription: normalizeEmptyField(chunks[20]),
-            rawResponse: normalizeEmptyField(payload)
+            rawResponse: normalizeEmptyField(payload, false)
         };
     }
 };
