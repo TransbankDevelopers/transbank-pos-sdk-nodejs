@@ -61,7 +61,7 @@ const creditVoucherExpectedLines = [
     "OPERACION: 000141   AUTORIZACION: 794160"
 ];
 
-describe("POS Integrado - Debit multicode sale transaction", () => {
+describe("POS Integrado - Debit multicode sale transaction - voucher", () => {
     const suite = setupSuiteContext();
 
     it("performs debit multicode sale and parses approved response with voucher", async () => {
@@ -113,10 +113,14 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
         expect(response.commerceProviderCode).toBe(597029414303);
     });
+});
+
+describe("POS Integrado - Debit multicode sale transaction", () => {
+    const suite = setupSuiteContext();
 
     it("performs debit multicode sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
@@ -160,7 +164,7 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
         expect(response.commerceProviderCode).toBe(597029414303);
         expect(sentMessage).toEqual(
@@ -201,7 +205,7 @@ describe("POS Integrado - Cancelled transaction", () => {
     });
 });
 
-describe("POS Integrado - Credit multicode sale transaction", () => {
+describe("POS Integrado - Credit multicode sale transaction - voucher", () => {
     const suite = setupSuiteContext();
 
     it("performs credit multicode sale and parses approved response with voucher", async () => {
@@ -259,6 +263,10 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
             buildMessage("0270|12000|ABC123||1|0|597029414303|")
         );
     });
+});
+
+describe("POS Integrado - Credit multicode sale transaction", () => {
+    const suite = setupSuiteContext();
 
     it("performs credit multicode sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
