@@ -47,13 +47,13 @@ const validateSharesFields = (
     installmentsType,
     installmentsNumber,
     installmentsAmount,
-    InstallmentsTypeDescription
+    installmentsTypeDescription
 ) => {
     expectResponseFields(response, {
         installmentsType: installmentsType,
         installmentsNumber: installmentsNumber,
         installmentsAmount: installmentsAmount,
-        InstallmentsTypeDescription: InstallmentsTypeDescription
+        installmentsTypeDescription: installmentsTypeDescription
     });
 };
 

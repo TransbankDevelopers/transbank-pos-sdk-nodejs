@@ -183,7 +183,7 @@ module.exports = class POSAutoservicio extends POSBase {
             installmentsType: parseNumber(chunks[16]),
             installmentsNumber: parseNumber(chunks[17]),
             installmentsAmount: parseNumber(chunks[18]),
-            InstallmentsTypeDescription: normalizeEmptyField(chunks[19]),
+            installmentsTypeDescription: normalizeEmptyField(chunks[19]),
             rawResponse: normalizeEmptyField(payload)
         };
     }
@@ -216,7 +216,7 @@ module.exports = class POSAutoservicio extends POSBase {
             installmentsType: parseNumber(chunks[17]),
             installmentsNumber: parseNumber(chunks[18]),
             installmentsAmount: parseNumber(chunks[19]),
-            InstallmentsTypeDescription: normalizeEmptyField(chunks[20]),
+            installmentsTypeDescription: normalizeEmptyField(chunks[20]),
             rawResponse: normalizeEmptyField(payload)
         };
     }
