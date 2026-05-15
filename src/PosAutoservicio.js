@@ -170,7 +170,7 @@ module.exports = class POSAutoservicio extends POSBase {
             ticket: normalizeEmptyField(chunks[4]),
             authorizationCode: normalizeEmptyField(chunks[5]),
             amount: parseNumber(chunks[6]),
-            last4Digits: chunks[7] ? parseNumber(chunks[7]) : null,
+            last4Digits: parseNumber(chunks[7]),
             operationNumber: parseNumber(chunks[8]),
             cardType: normalizeEmptyField(chunks[9]),
             accountingDate: normalizeEmptyField(chunks[10]),
