@@ -159,19 +159,6 @@ module.exports = class POSAutoservicio extends POSBase {
     saleResponse(payload) {
         let chunks = payload.split("|");
         const responseCode = parseNumber(chunks[1]);
-        const success = responseCode === 0;
-
-        if (!success) {
-            return {
-                functionCode: normalizeEmptyField(
-                    chunks[0].replaceAll(/\D+/g, "")
-                ),
-                responseCode: responseCode,
-                responseMessage: this.getResponseMessage(responseCode),
-                success: success,
-                rawResponse: normalizeEmptyField(payload)
-            };
-        }
 
         return {
             functionCode: normalizeEmptyField(chunks[0].replaceAll(/\D+/g, "")),
@@ -179,7 +166,7 @@ module.exports = class POSAutoservicio extends POSBase {
             responseMessage: this.getResponseMessage(responseCode),
             commerceCode: parseNumber(chunks[2]),
             terminalId: normalizeEmptyField(chunks[3]),
-            success: success,
+            success: responseCode === 0,
             ticket: normalizeEmptyField(chunks[4]),
             authorizationCode: normalizeEmptyField(chunks[5]),
             amount: parseNumber(chunks[6]),
@@ -204,25 +191,12 @@ module.exports = class POSAutoservicio extends POSBase {
     multicodeSaleResponse(payload) {
         const chunks = payload.split("|");
         const responseCode = parseNumber(chunks[1]);
-        const success = responseCode === 0;
-
-        if (!success) {
-            return {
-                functionCode: normalizeEmptyField(
-                    chunks[0].replaceAll(/\D+/g, "")
-                ),
-                responseCode: responseCode,
-                responseMessage: this.getResponseMessage(responseCode),
-                success: success,
-                rawResponse: normalizeEmptyField(payload)
-            };
-        }
 
         return {
             functionCode: normalizeEmptyField(chunks[0].replaceAll(/\D+/g, "")),
             responseCode: responseCode,
             responseMessage: this.getResponseMessage(responseCode),
-            success: success,
+            success: responseCode === 0,
             commerceCode: parseNumber(chunks[2]),
             terminalId: normalizeEmptyField(chunks[3]),
             ticket: normalizeEmptyField(chunks[4]),
