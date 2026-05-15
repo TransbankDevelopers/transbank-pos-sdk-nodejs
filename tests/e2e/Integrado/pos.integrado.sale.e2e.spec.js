@@ -24,10 +24,22 @@ const createConnectedPos = async (suite) => {
     return pos;
 };
 
+const expectedVoucherLines = [
+    "MONTO VENTA:                     $32.773",
+    "           RUT: 11.111.111-1            ",
+    "OPERACION: 000156   AUTORIZACION: 532264"
+];
+
 const normalSaleCreditWithVoucherResponsePayload =
     "0210|00|597029414300|IT750870|ABC123|532264|39000|00||6590|000156|CR|000000|3000000000000000000|VI|07052026|161140||0|" +
     normalSaleCreditVoucher +
     "|";
+
+const normalSaleWithOutVoucherResponsePayload =
+    "0210|00|597029414300|IT750870|ABC123|144809|35000|03|11668|6590|000155|CR|003000|3000000000000000000|VI|07052026|152829||0||";
+
+const canceledSaleResponsePayload =
+    "0210|07|597029414300|IT750870|ABC123||80000||||||||||||||";
 
 describe("POS Integrado - Normal sale transaction", () => {
     const suite = setupSuiteContext();
@@ -38,12 +50,6 @@ describe("POS Integrado - Normal sale transaction", () => {
         await sendReply(pos, ACK_BYTE);
         await sendReply(pos, normalSaleCreditWithVoucherResponsePayload);
         const response = await salePromise;
-        const expectedVoucherLines = [
-            "MONTO VENTA:                     $32.773",
-            "           RUT: 11.111.111-1            ",
-            "OPERACION: 000156   AUTORIZACION: 532264"
-        ];
-
         expect(response.rawResponse).toBe(
             normalSaleCreditWithVoucherResponsePayload
         );
@@ -82,13 +88,12 @@ describe("POS Integrado - Normal sale transaction", () => {
         const pos = await createConnectedPos(suite);
         const salePromise = pos.sale(35000, "ABC123", false, false);
         const sentMessage = await captureSend(pos);
-        const posResponse =
-            "0210|00|597029414300|IT750870|ABC123|144809|35000|03|11668|6590|000155|CR|003000|3000000000000000000|VI|07052026|152829||0||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, posResponse);
+        await sendReply(pos, normalSaleWithOutVoucherResponsePayload);
         const response = await salePromise;
-
-        expect(response.rawResponse).toBe(posResponse);
+        expect(response.rawResponse).toBe(
+            normalSaleWithOutVoucherResponsePayload
+        );
         expect(response.printingField).toBeNull();
         expect(response.rawVoucher).toBeNull();
         expect(sentMessage).toEqual(buildMessage("0200|35000|ABC123||0|0"));
@@ -124,13 +129,10 @@ describe("POS Integrado - Normal sale transaction", () => {
         const pos = await createConnectedPos(suite);
         const salePromise = pos.sale(80000, "ABC123", false, true);
         const sentMessage = await captureSend(pos);
-        const posResponse =
-            "0210|07|597029414300|IT750870|ABC123||80000||||||||||||||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, posResponse);
+        await sendReply(pos, canceledSaleResponsePayload);
         const response = await salePromise;
-
-        expect(response.rawResponse).toBe(posResponse);
+        expect(response.rawResponse).toBe(canceledSaleResponsePayload);
         expect(response.printingField).toBeNull();
         expect(response.rawVoucher).toBeNull();
         expect(sentMessage).toEqual(buildMessage("0200|80000|ABC123||1|0"));
