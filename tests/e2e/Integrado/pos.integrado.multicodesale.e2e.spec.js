@@ -61,7 +61,7 @@ const creditVoucherExpectedLines = [
     "OPERACION: 000141   AUTORIZACION: 794160"
 ];
 
-describe("POS Integrado - Debit multicode sale transaction", () => {
+describe("POS Integrado - Debit multicode sale transaction - voucher", () => {
     const suite = setupSuiteContext();
 
     it("performs debit multicode sale and parses approved response with voucher", async () => {
@@ -78,13 +78,20 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
         await sendReply(pos, multiCodeSaleDebitWithVoucherResponsePayload);
         const response = await salePromise;
 
+        expect(response.rawResponse).toBe(
+            multiCodeSaleDebitWithVoucherResponsePayload
+        );
+        expect(response.rawVoucher).toBe(multiCodeSaleDebitVoucher);
         expect(sentMessage).toEqual(
             buildMessage("0270|8000|ABC123||1|0|597029414303|")
         );
-        validateVoucherContent(response.voucher, debitVoucherExpectedLines);
+        validateVoucherContent(
+            response.printingField,
+            debitVoucherExpectedLines
+        );
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414300,
@@ -96,7 +103,7 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "ABC123",
             "708410",
             8000,
-            "000143",
+            143,
             "07042026",
             "085034"
         );
@@ -106,10 +113,14 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
-        expect(response.lenderCommerceCode).toBe(597029414303);
+        expect(response.commerceProviderCode).toBe(597029414303);
     });
+});
+
+describe("POS Integrado - Debit multicode sale transaction", () => {
+    const suite = setupSuiteContext();
 
     it("performs debit multicode sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
@@ -124,10 +135,14 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
         await sendReply(pos, ACK_BYTE);
         await sendReply(pos, multiCodeSaleDebitWithoutVoucherResponsePayload);
         const response = await salePromise;
-        expect(response.voucher).toBeNull();
+        expect(response.printingField).toBeNull();
+        expect(response.rawVoucher).toBeNull();
+        expect(response.rawResponse).toBe(
+            multiCodeSaleDebitWithoutVoucherResponsePayload
+        );
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414300,
@@ -139,7 +154,7 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "ABC123",
             "388892",
             7000,
-            "000144",
+            144,
             "07042026",
             "085628"
         );
@@ -149,9 +164,9 @@ describe("POS Integrado - Debit multicode sale transaction", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
-        expect(response.lenderCommerceCode).toBe(597029414303);
+        expect(response.commerceProviderCode).toBe(597029414303);
         expect(sentMessage).toEqual(
             buildMessage("0270|7000|ABC123||0|0|597029414303|")
         );
@@ -177,15 +192,20 @@ describe("POS Integrado - Cancelled transaction", () => {
         expect(sentMessage).toEqual(
             buildMessage("0270|90000|ABC123||1|0|597029414303|")
         );
+        expect(response.rawResponse).toBe(
+            multiCodeSaleCancelledResponsePayload
+        );
         expect(response.responseCode).toBe(7);
         expect(response.responseMessage).toBe(
             "Transacción Cancelada desde el POS"
         );
-        expect(response.successful).toBe(false);
+        expect(response.success).toBe(false);
+        expect(response.rawVoucher).toBeNull();
+        expect(response.printingField).toBeNull();
     });
 });
 
-describe("POS Integrado - Credit multicode sale transaction", () => {
+describe("POS Integrado - Credit multicode sale transaction - voucher", () => {
     const suite = setupSuiteContext();
 
     it("performs credit multicode sale and parses approved response with voucher", async () => {
@@ -202,10 +222,17 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
         await sendReply(pos, multiCodeSaleCreditWithVoucherResponsePayload);
         const response = await salePromise;
 
-        validateVoucherContent(response.voucher, creditVoucherExpectedLines);
+        expect(response.rawResponse).toBe(
+            multiCodeSaleCreditWithVoucherResponsePayload
+        );
+        expect(response.rawVoucher).toBe(multiCodeSaleCreditVoucher);
+        validateVoucherContent(
+            response.printingField,
+            creditVoucherExpectedLines
+        );
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414300,
@@ -217,7 +244,7 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
             "ABC123",
             "794160",
             12000,
-            "000141",
+            141,
             "06042026",
             "234109"
         );
@@ -229,13 +256,17 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
             "003000",
             "3000000000000000000"
         );
-        expect(response.sharesNumber).toBe("03");
-        expect(response.sharesAmount).toBe("4000");
-        expect(response.lenderCommerceCode).toBe(597029414303);
+        expect(response.installmentsNumber).toBe(3);
+        expect(response.installmentsAmount).toBe(4000);
+        expect(response.commerceProviderCode).toBe(597029414303);
         expect(sentMessage).toEqual(
             buildMessage("0270|12000|ABC123||1|0|597029414303|")
         );
     });
+});
+
+describe("POS Integrado - Credit multicode sale transaction", () => {
+    const suite = setupSuiteContext();
 
     it("performs credit multicode sale and parses approved response without voucher", async () => {
         const pos = await createConnectedPos(suite);
@@ -251,10 +282,14 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
         await sendReply(pos, multiCodeSaleCreditWithoutVoucherResponsePayload);
         const response = await salePromise;
 
-        expect(response.voucher).toBeNull();
+        expect(response.rawResponse).toBe(
+            multiCodeSaleCreditWithoutVoucherResponsePayload
+        );
+        expect(response.rawVoucher).toBeNull();
+        expect(response.printingField).toBeNull();
         validateBaseSaleFields(
             response,
-            271,
+            "0271",
             0,
             "Aprobado",
             597029414300,
@@ -266,7 +301,7 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
             "ABC123",
             "162529",
             9000,
-            "000142",
+            142,
             "07042026",
             "084918"
         );
@@ -278,9 +313,9 @@ describe("POS Integrado - Credit multicode sale transaction", () => {
             "003000",
             "3000000000000000000"
         );
-        expect(response.sharesNumber).toBe("03");
-        expect(response.sharesAmount).toBe("3000");
-        expect(response.lenderCommerceCode).toBe(597029414303);
+        expect(response.installmentsNumber).toBe(3);
+        expect(response.installmentsAmount).toBe(3000);
+        expect(response.commerceProviderCode).toBe(597029414303);
         expect(sentMessage).toEqual(
             buildMessage("0270|9000|ABC123||0|0|597029414303|")
         );

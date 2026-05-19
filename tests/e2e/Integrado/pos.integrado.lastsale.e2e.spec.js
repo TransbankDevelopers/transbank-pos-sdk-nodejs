@@ -25,13 +25,13 @@ describe("POS Integrado - Last Sale with transactions", () => {
         const pos = await createConnectedPos(suite);
         const lastSalePromise = pos.getLastSale();
         const sentMessage = await captureSend(pos);
+        const posResponse =
+            "0260|00|597029414300|IT750050|ABC123|875395|1000|00|0|3331|000140|DB|000000|  ********331      |DB|03032026|093106||||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(
-            pos,
-            "0260|00|597029414300|IT750050|ABC123|875395|1000|00|0|3331|000140|DB|000000|  ********331      |DB|03032026|093106||||"
-        );
+        await sendReply(pos, posResponse);
         const response = await lastSalePromise;
 
+        expect(response.rawResponse).toEqual(posResponse);
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,
@@ -57,7 +57,7 @@ describe("POS Integrado - Last Sale with transactions", () => {
             "DB",
             3331,
             "000000",
-            "  ********331      "
+            "********331"
         );
         expect(response.employeeId).toBe(null);
         expect(response.tip).toBe(null);
@@ -67,13 +67,13 @@ describe("POS Integrado - Last Sale with transactions", () => {
         const pos = await createConnectedPos(suite);
         const lastSalePromise = pos.getLastSale();
         const sentMessage = await captureSend(pos);
+        const posResponse =
+            "0260|00|597029414300|IT750050|ABC123|794160|12000|03|4000|6590|000141|CR|003000|3000000000000000000|VI|06042026|234109||||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(
-            pos,
-            "0260|00|597029414300|IT750050|ABC123|794160|12000|03|4000|6590|000141|CR|003000|3000000000000000000|VI|06042026|234109||||"
-        );
+        await sendReply(pos, posResponse);
         const response = await lastSalePromise;
 
+        expect(response.rawResponse).toEqual(posResponse);
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,
@@ -113,10 +113,12 @@ describe("POS Integrado - Last Sale without transactions", () => {
         const pos = await createConnectedPos(suite);
         const lastSalePromise = pos.getLastSale();
         const sentMessage = await captureSend(pos);
+        const posResponse = "0260|11|||||||||||||||||||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "0260|11|||||||||||||||||||");
+        await sendReply(pos, posResponse);
         const response = await lastSalePromise;
 
+        expect(response.rawResponse).toEqual(posResponse);
         expect(sentMessage).toEqual(buildMessage("0250|"));
         validateBaseSaleFields(
             response,

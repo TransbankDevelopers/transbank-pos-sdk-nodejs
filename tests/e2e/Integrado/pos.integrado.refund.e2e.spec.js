@@ -21,19 +21,21 @@ describe("POS Integrado - Refund", () => {
         const pos = await createConnectedPos(suite);
         const refundPromise = pos.refund(143);
         const sentMessage = await captureSend(pos);
+        const posResponse = "1210|21|597029414300|IT750050||143||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "1210|21|597029414300|IT750050||143||");
+        await sendReply(pos, posResponse);
         const response = await refundPromise;
         expect(sentMessage).toEqual(buildMessage("1200|143|"));
+        expect(response.rawResponse).toEqual(posResponse);
         expectResponseFields(response, {
-            functionCode: 1210,
+            functionCode: "1210",
             responseCode: 21,
             commerceCode: 597029414300,
             terminalId: "IT750050",
-            authorizationCode: "",
-            operationId: "143",
+            authorizationCode: null,
+            operationId: 143,
             responseMessage: "Anulación no Permitida",
-            successful: false
+            success: false
         });
     });
 
@@ -41,19 +43,21 @@ describe("POS Integrado - Refund", () => {
         const pos = await createConnectedPos(suite);
         const refundPromise = pos.refund(142);
         const sentMessage = await captureSend(pos);
+        const posResponse = "1210|00|597029414300|IT750050|162529|000142||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "1210|00|597029414300|IT750050|162529|000142||");
+        await sendReply(pos, posResponse);
         const response = await refundPromise;
+        expect(response.rawResponse).toEqual(posResponse);
         expect(sentMessage).toEqual(buildMessage("1200|142|"));
         expectResponseFields(response, {
-            functionCode: 1210,
+            functionCode: "1210",
             responseCode: 0,
             commerceCode: 597029414300,
             terminalId: "IT750050",
             authorizationCode: "162529",
-            operationId: "000142",
+            operationId: 142,
             responseMessage: "Aprobado",
-            successful: true
+            success: true
         });
     });
 });

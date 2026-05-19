@@ -1,8 +1,16 @@
 const INTEGER_PATTERN = /^-?\d+$/;
 
-const normalizeEmptyField = (value) => {
+const normalizeEmptyField = (value, trim = true) => {
     if (value === undefined || value === null || value === "") {
         return null;
+    }
+
+    if (trim) {
+        const trimmedValue = value.trim();
+        if (trimmedValue === "") {
+            return null;
+        }
+        return trimmedValue;
     }
 
     return value;

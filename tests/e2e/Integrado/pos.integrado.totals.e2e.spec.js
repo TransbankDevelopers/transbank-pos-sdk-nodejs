@@ -21,17 +21,19 @@ describe("POS Integrado - Totals", () => {
 
         const totalsPromise = pos.getTotals();
         const sentMessage = await captureSend(pos);
+        const posResponse = "0710|00|002|15000||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "0710|00|002|15000||");
+        await sendReply(pos, posResponse);
         expect(sentMessage).toEqual(buildMessage("0700||"));
         const response = await totalsPromise;
         expect(response).toEqual({
-            functionCode: 710,
+            functionCode: "0710",
             responseCode: 0,
             txCount: 2,
             txTotal: 15000,
             responseMessage: "Aprobado",
-            successful: true
+            success: true,
+            rawResponse: posResponse
         });
     });
 
@@ -40,17 +42,19 @@ describe("POS Integrado - Totals", () => {
 
         const totalsPromise = pos.getTotals();
         const sentMessage = await captureSend(pos);
+        const posResponse = "0710|00|000|0||";
         await sendReply(pos, ACK_BYTE);
-        await sendReply(pos, "0710|00|000|||");
+        await sendReply(pos, posResponse);
         expect(sentMessage).toEqual(buildMessage("0700||"));
         const response = await totalsPromise;
         expect(response).toEqual({
-            functionCode: 710,
+            functionCode: "0710",
             responseCode: 0,
             txCount: 0,
-            txTotal: null,
+            txTotal: 0,
             responseMessage: "Aprobado",
-            successful: true
+            success: true,
+            rawResponse: posResponse
         });
     });
 });

@@ -11,7 +11,7 @@ const validateBaseSaleFields = (
     responseMessage,
     commerceCode,
     terminalId,
-    successful
+    success
 ) => {
     expectResponseFields(response, {
         functionCode: functionCode,
@@ -19,7 +19,7 @@ const validateBaseSaleFields = (
         responseMessage: responseMessage,
         commerceCode: commerceCode,
         terminalId: terminalId,
-        successful: successful
+        success: success
     });
 };
 
@@ -44,16 +44,16 @@ const validateSaleFields = (
 
 const validateSharesFields = (
     response,
-    sharesType,
-    sharesNumber,
-    sharesAmount,
-    sharesTypeGloss
+    installmentsType,
+    installmentsNumber,
+    installmentsAmount,
+    installmentsTypeDescription
 ) => {
     expectResponseFields(response, {
-        sharesType: sharesType,
-        sharesNumber: sharesNumber,
-        sharesAmount: sharesAmount,
-        sharesTypeGloss: sharesTypeGloss
+        installmentsType: installmentsType,
+        installmentsNumber: installmentsNumber,
+        installmentsAmount: installmentsAmount,
+        installmentsTypeDescription: installmentsTypeDescription
     });
 };
 
@@ -75,8 +75,8 @@ const validateAccountFields = (
 };
 
 const validateVoucherContent = (voucher, expectedLines) => {
-    expect(voucher.every(line => line.length === 40)).toBe(true);
-    const voucherText = voucher.join('\n');
+    expect(voucher.every((line) => line.length === 40)).toBe(true);
+    const voucherText = voucher.join("\n");
     expectedLines.forEach((expectedLine) => {
         expect(voucherText).toContain(expectedLine);
     });

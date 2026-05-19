@@ -3,9 +3,11 @@ const { SerialPort } = require("serialport")
 const EventEmitter = require('events');
 const { InterByteTimeoutParser } = require("@serialport/parser-inter-byte-timeout")
 const responseMessages = require("./responseCodes");
+const { normalizeEmptyField, parseNumber } = require("./helpers/fieldParser");
 const ACK = 0x06
 const FUNCTION_CODE_INTERMEDIATE_MESSAGE = "0900";
 const FUNCTION_CODE_SALES_DETAIL_RESPONSE = "0261";
+const SUCCESSFUL_RESPONSE_CODE = 0;
 
 module.exports = class POSBase extends EventEmitter {
 
@@ -340,13 +342,15 @@ module.exports = class POSBase extends EventEmitter {
     loadKeys() {
         return this.send("0800").then((data) => {
             let chunks = data.split("|")
+            const responseCode = parseNumber(chunks[1]);
             return {
-                functionCode: parseInt(chunks[0]),
-                responseCode: parseInt(chunks[1]),
-                commerceCode: parseInt(chunks[2]),
-                terminalId: chunks[3],
-                responseMessage: this.getResponseMessage(parseInt(chunks[1])),
-                successful: parseInt(chunks[1])===0
+                functionCode: normalizeEmptyField(chunks[0]),
+                responseCode: responseCode,
+                commerceCode: parseNumber(chunks[2]),
+                terminalId: normalizeEmptyField(chunks[3]),
+                responseMessage: this.getResponseMessage(responseCode),
+                success: responseCode === SUCCESSFUL_RESPONSE_CODE,
+                rawResponse: normalizeEmptyField(data, false)
             }
         })
     }
@@ -354,8 +358,9 @@ module.exports = class POSBase extends EventEmitter {
     intermediateResponse(payload) {
         let chunks = payload.split("|")
         let response = {
-            responseCode: parseInt(chunks[1]),
-            responseMessage: this.getResponseMessage(parseInt(chunks[1]))
+            responseCode: parseNumber(chunks[1]),
+            responseMessage: this.getResponseMessage(parseNumber(chunks[1])),
+            rawResponse: normalizeEmptyField(payload, false)
         }
 
         return response;
