@@ -124,7 +124,7 @@ module.exports = class POSIntegrado extends POSBase {
     }
 
     refund(operationId) {
-        if (typeof operationId === "undefined") {
+        if (operationId === undefined) {
             throw new Error(
                 "Operation ID not provided when calling refund method."
             );
