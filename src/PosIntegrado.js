@@ -107,14 +107,10 @@ module.exports = class POSIntegrado extends POSBase {
                     sales.push(detail);
                 }
 
-                if (
+                return (
                     consecutiveEmptyAuthCodes >=
                     CONSECUTIVE_EMPTY_AUTHCODE_LIMIT
-                ) {
-                    return true;
-                }
-
-                return false;
+                );
             };
 
             this.send(command, true, processDetailResponse)
